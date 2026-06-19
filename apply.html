@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apply for Certificate</title>
+    <title>CertPortal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header>
@@ -15,7 +13,8 @@
             <div class="container">
                 <div class="logo"><i class="fas fa-award"></i> CertPortal</div>
                 <ul class="nav-links" id="navLinks">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="apply.html">Apply</a></li>
                     <li><a href="status.html">Track</a></li>
                     <li><a href="download.html">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
@@ -27,255 +26,46 @@
         </nav>
     </header>
 
-    <section class="apply-section">
+    <section class="hero">
         <div class="container">
-            <h2>Apply for <span id="certName">Certificate</span></h2>
-            <p class="sub">Fill in all required details below (<span style="color:#dc3545;">*</span> required)</p>
-            <form id="applyForm" class="apply-form" novalidate>
-                <div id="formFields"></div>
-                <div id="validationError" class="form-status error" style="display:none;"></div>
-                <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit Application</button>
-            </form>
-            <div id="formStatus" class="form-status"></div>
-            <div id="progressOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:none;justify-content:center;align-items:center;flex-direction:column;">
-                <div style="background:#fff;padding:40px;border-radius:12px;text-align:center;max-width:400px;width:90%;">
-                    <i class="fas fa-spinner fa-spin" style="font-size:3rem;color:#6C63FF;margin-bottom:15px;"></i>
-                    <h3 id="progressText">Generating your receipt...</h3>
-                    <div style="width:100%;height:10px;background:#eee;border-radius:5px;margin:15px 0;overflow:hidden;">
-                        <div id="progressBar" style="width:0%;height:100%;background:#6C63FF;border-radius:5px;transition:width 0.3s;"></div>
-                    </div>
-                    <p id="progressSub" style="color:#666;font-size:0.9rem;">Please wait</p>
-                </div>
-            </div>
+            <h1>Official <span>Certificates</span> of Recognition</h1>
+            <p>Apply for prestigious certificates and get officially recognized.</p>
+            <a href="apply.html" class="btn-primary">Apply Now <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <section class="services">
+        <div class="container">
+            <h2>Available <span>Certificates</span></h2>
+            <div class="service-grid" id="certGrid"></div>
         </div>
     </section>
 
     <footer>
-        <div class="container"><div class="footer-bottom"><p>All Rights Reserved @dEMO</p></div></div>
+        <div class="container">
+            <div class="footer-bottom"><p>All Rights Reserved @dEMO</p></div>
+        </div>
     </footer>
 
     <script src="script.js"></script>
     <script>
-        // ----- Certificate definitions -----
-        const certTypes = {
-            'funniest-man': { name: 'Funniest Man of the Year', fields: ['fullName','email','phone','address','comedyStyle','yearsExp','bestJoke','videoLink','socialHandle'] },
-            'tallest-man': { name: 'Tallest Man of India', fields: ['fullName','email','phone','address','heightCm','city','state','dob','profession','proofHeight'] },
-            'millionaire': { name: 'Millionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber'] },
-            'billionaire': { name: 'Billionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber','globalPresence'] },
-            'trillionaire': { name: 'Trillionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber','globalPresence','industryType'] },
-            'content-creator': { name: 'Content Creator Certificate', fields: ['fullName','email','phone','address','platform','followers','contentNiche','yearsActive','bestContentLink'] }
-        };
-        const fieldLabels = {
-            fullName: 'Full Name *', email: 'Email Address *', phone: 'Phone Number *', address: 'Address *',
-            comedyStyle: 'Comedy Style *', yearsExp: 'Years of Experience *', bestJoke: 'Best Joke *', videoLink: 'Video Link', socialHandle: 'Social Media Handle',
-            heightCm: 'Height (cm) *', city: 'City *', state: 'State *', dob: 'Date of Birth *', profession: 'Profession *', proofHeight: 'Proof of Height (link)',
-            netWorth: 'Net Worth (USD) *', sourceWealth: 'Source of Wealth *', businessName: 'Business Name *', yearsSuccess: 'Years of Success *', panNumber: 'PAN Number *',
-            globalPresence: 'Global Presence (Countries)', industryType: 'Industry Type *',
-            platform: 'Primary Platform *', followers: 'Followers Count *', contentNiche: 'Content Niche *', yearsActive: 'Years Active *', bestContentLink: 'Best Content Link *'
-        };
-        const fieldTypes = {
-            fullName: 'text', email: 'email', phone: 'tel', address: 'text', comedyStyle: 'text', yearsExp: 'number', bestJoke: 'text', videoLink: 'url', socialHandle: 'text',
-            heightCm: 'number', city: 'text', state: 'text', dob: 'date', profession: 'text', proofHeight: 'url',
-            netWorth: 'number', sourceWealth: 'text', businessName: 'text', yearsSuccess: 'number', panNumber: 'text',
-            globalPresence: 'text', industryType: 'text',
-            platform: 'text', followers: 'number', contentNiche: 'text', yearsActive: 'number', bestContentLink: 'url'
-        };
-        const urlParams = new URLSearchParams(window.location.search);
-        const certType = urlParams.get('type') || 'funniest-man';
-        const certData = certTypes[certType] || certTypes['funniest-man'];
-        document.getElementById('certName').textContent = certData.name;
-
-        // Build form
-        const container = document.getElementById('formFields');
-        container.innerHTML = certData.fields.map(f => `
-            <div class="form-group">
-                <label for="${f}"><i class="fas ${f==='fullName'?'fa-user':f==='email'?'fa-envelope':f==='phone'?'fa-phone':'fa-pen'}"></i> ${fieldLabels[f] || f}</label>
-                <input type="${fieldTypes[f] || 'text'}" id="${f}" name="${f}" ${f.includes('*')?'required':''} placeholder="Enter ${(fieldLabels[f]||f).replace('*','').trim()}" />
+        const certificates = [
+            { id: 'funniest-man', name: 'Funniest Man of the Year', icon: 'fa-face-laugh', desc: 'Recognized for outstanding humor.' },
+            { id: 'tallest-man', name: 'Tallest Man of India', icon: 'fa-person', desc: 'Officially recognized for exceptional height.' },
+            { id: 'millionaire', name: 'Millionaire Certificate', icon: 'fa-coins', desc: 'Recognition of achieving millionaire status.' },
+            { id: 'billionaire', name: 'Billionaire Certificate', icon: 'fa-gem', desc: 'Recognition of achieving billionaire status.' },
+            { id: 'trillionaire', name: 'Trillionaire Certificate', icon: 'fa-crown', desc: 'Recognition of achieving trillionaire status.' },
+            { id: 'content-creator', name: 'Content Creator Certificate', icon: 'fa-video', desc: 'Recognized for excellence in content creation.' }
+        ];
+        const grid = document.getElementById('certGrid');
+        grid.innerHTML = certificates.map(c => `
+            <div class="service-card">
+                <i class="fas ${c.icon}"></i>
+                <h3>${c.name}</h3>
+                <p>${c.desc}</p>
+                <a href="apply.html?type=${c.id}" class="apply-btn">Apply <i class="fas fa-arrow-right"></i></a>
             </div>
         `).join('');
-
-        // ----- FORM SUBMISSION WITH STRICT VALIDATION -----
-        document.getElementById('applyForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Reset previous errors
-            document.querySelectorAll('.form-group input').forEach(el => {
-                el.style.borderColor = '';
-                el.style.boxShadow = '';
-            });
-            document.getElementById('validationError').style.display = 'none';
-            document.getElementById('validationError').innerHTML = '';
-
-            // Collect all required fields
-            const required = this.querySelectorAll('[required]');
-            let missing = [];
-            let firstError = null;
-
-            required.forEach(field => {
-                const val = field.value.trim();
-                if (!val) {
-                    missing.push(field);
-                    field.style.borderColor = '#dc3545';
-                    field.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
-                    if (!firstError) firstError = field;
-                }
-            });
-
-            // Email validation
-            const email = document.getElementById('email');
-            if (email && email.value.trim() && !validateEmail(email.value.trim())) {
-                missing.push(email);
-                email.style.borderColor = '#dc3545';
-                email.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
-                if (!firstError) firstError = email;
-            }
-
-            if (missing.length > 0) {
-                const errorDiv = document.getElementById('validationError');
-                errorDiv.innerHTML = '❌ Please fill in all required fields correctly.';
-                errorDiv.style.display = 'block';
-                if (firstError) firstError.focus();
-                return;
-            }
-
-            // Collect data
-            const formData = new FormData(this);
-            const data = {};
-            certData.fields.forEach(f => data[f] = formData.get(f) || '');
-            data.certificateType = certType;
-            data.certificateName = certData.name;
-            data.status = 'pending';
-            data.submittedAt = new Date().toISOString();
-            data.referenceNumber = generateRef();
-
-            // Send to server
-            fetch('/api/applications', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(saved => {
-                document.getElementById('formStatus').className = 'form-status success';
-                document.getElementById('formStatus').innerHTML = `
-                    ✅ <strong>Application Submitted!</strong><br>
-                    Dear ${data.fullName}, your application for <strong>${data.certificateName}</strong> has been submitted successfully.<br>
-                    Your Reference Number: <strong style="color:#6C63FF;font-size:1.2rem;">${data.referenceNumber}</strong><br>
-                    You will receive your certificate within 7 working days.<br>
-                    <small>Use this reference number to track your application status.</small>
-                    <br><br>
-                    <button onclick="downloadReceipt('${data.referenceNumber}')" class="btn-receipt"><i class="fas fa-file-pdf"></i> Download Receipt</button>
-                `;
-                this.reset();
-                setTimeout(() => downloadReceipt(data.referenceNumber), 1200);
-                setTimeout(() => document.getElementById('formStatus').className = 'form-status', 20000);
-            })
-            .catch(err => {
-                document.getElementById('formStatus').className = 'form-status error';
-                document.getElementById('formStatus').innerHTML = '❌ Server error: ' + err.message;
-            });
-        });
-
-        function validateEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        // ----- RECEIPT PDF -----
-        function downloadReceipt(ref) {
-            fetch('/api/applications')
-                .then(res => res.json())
-                .then(apps => {
-                    const app = apps.find(a => a.referenceNumber === ref);
-                    if (!app) { alert('Receipt not found.'); return; }
-                    generateReceiptPDF(app);
-                })
-                .catch(err => alert('Error: ' + err.message));
-        }
-
-        function generateReceiptPDF(app) {
-            const overlay = document.getElementById('progressOverlay');
-            overlay.style.display = 'flex';
-            const bar = document.getElementById('progressBar');
-            const text = document.getElementById('progressText');
-            const sub = document.getElementById('progressSub');
-            bar.style.width = '0%';
-            text.textContent = 'Generating receipt...';
-            sub.textContent = 'Please wait';
-
-            let pct = 0;
-            const interval = setInterval(() => {
-                pct += Math.random() * 15 + 5;
-                if (pct > 90) pct = 90;
-                bar.style.width = pct + '%';
-            }, 200);
-
-            const receiptHTML = `
-                <div id="receiptContainer" style="
-                    width:600px; padding:40px; background:#fff; font-family:'Segoe UI',Arial,sans-serif;
-                    border:2px solid #6C63FF; border-radius:8px; margin:0 auto; position:relative;
-                ">
-                    <div style="text-align:center; border-bottom:3px solid #6C63FF; padding-bottom:15px; margin-bottom:20px;">
-                        <h1 style="color:#6C63FF; font-size:28px; margin:0;">🏛️ CertPortal</h1>
-                        <p style="color:#666; margin:5px 0 0; font-size:14px;">Office of the Commissioner</p>
-                    </div>
-                    <h2 style="text-align:center; font-size:20px; color:#2D2D3F; margin:10px 0;">ACKNOWLEDGEMENT RECEIPT</h2>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0;">
-                        <p><strong>Reference No:</strong> ${app.referenceNumber}</p>
-                        <p><strong>Date:</strong> ${new Date(app.submittedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</p>
-                        <p><strong>Applicant:</strong> ${app.fullName}</p>
-                        <p><strong>Certificate:</strong> ${app.certificateName}</p>
-                        <p><strong>Email:</strong> ${app.email}</p>
-                        <p><strong>Phone:</strong> ${app.phone}</p>
-                    </div>
-                    <div style="background:#f8f9fc; padding:15px; border-radius:6px; margin:15px 0;">
-                        <p style="margin:0; color:#333; font-size:15px; line-height:1.6;">
-                            Dear <strong>${app.fullName}</strong>,<br>
-                            Your application for <strong>${app.certificateName}</strong> has been received successfully.
-                            It will be processed within 7 working days. You will be notified once approved.
-                        </p>
-                    </div>
-                    <div style="text-align:center; margin-top:20px; padding-top:15px; border-top:1px solid #eee; font-size:12px; color:#999;">
-                        This is a system-generated receipt. For queries, contact support@certportal.com
-                    </div>
-                </div>
-            `;
-
-            const container = document.createElement('div');
-            container.innerHTML = receiptHTML;
-            document.body.appendChild(container);
-            const receiptEl = document.getElementById('receiptContainer');
-
-            html2canvas(receiptEl, { scale: 2, useCORS: true, backgroundColor: '#fff' }).then(canvas => {
-                clearInterval(interval);
-                bar.style.width = '100%';
-                text.textContent = '✅ Receipt ready!';
-                sub.textContent = 'Downloading...';
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                const pdfWidth = 210;
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`Receipt_${app.referenceNumber}.pdf`);
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    bar.style.width = '0%';
-                    document.body.removeChild(container);
-                }, 1000);
-            }).catch(err => {
-                clearInterval(interval);
-                overlay.style.display = 'none';
-                document.body.removeChild(container);
-                alert('Error generating receipt: ' + err.message);
-            });
-        }
-
-        // Style for receipt button
-        const style = document.createElement('style');
-        style.textContent = `
-            .btn-receipt { background:#6C63FF; color:#fff; border:none; padding:10px 25px; border-radius:6px; cursor:pointer; font-weight:600; margin-top:10px; }
-            .btn-receipt:hover { background:#5A52D5; }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
