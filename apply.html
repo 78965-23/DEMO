@@ -17,7 +17,7 @@
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html">Home</a></li>
                     <li><a href="apply.html" class="active">Apply</a></li>
-                    <li><a href="status.html">Track Status</a></li>
+                    <li><a href="status.html">Track</a></li>
                     <li><a href="download.html">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
                 </ul>
@@ -57,7 +57,7 @@
 
     <script src="script.js"></script>
     <script>
-        // ----- Certificate definitions (same as before) -----
+        // ----- Certificate definitions -----
         const certTypes = {
             'funniest-man': { name: 'Funniest Man of the Year', fields: ['fullName','email','phone','address','comedyStyle','yearsExp','bestJoke','videoLink','socialHandle'] },
             'tallest-man': { name: 'Tallest Man of India', fields: ['fullName','email','phone','address','heightCm','city','state','dob','profession','proofHeight'] },
@@ -95,7 +95,7 @@
             </div>
         `).join('');
 
-        // ----- Form submission with validation -----
+        // ----- FORM SUBMISSION WITH STRICT VALIDATION -----
         document.getElementById('applyForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -105,15 +105,20 @@
                 el.style.boxShadow = '';
             });
             document.getElementById('validationError').style.display = 'none';
+            document.getElementById('validationError').innerHTML = '';
 
             // Collect all required fields
             const required = this.querySelectorAll('[required]');
             let missing = [];
+            let firstError = null;
+
             required.forEach(field => {
-                if (!field.value.trim()) {
+                const val = field.value.trim();
+                if (!val) {
                     missing.push(field);
                     field.style.borderColor = '#dc3545';
                     field.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
+                    if (!firstError) firstError = field;
                 }
             });
 
@@ -123,13 +128,14 @@
                 missing.push(email);
                 email.style.borderColor = '#dc3545';
                 email.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
+                if (!firstError) firstError = email;
             }
 
             if (missing.length > 0) {
                 const errorDiv = document.getElementById('validationError');
                 errorDiv.innerHTML = '❌ Please fill in all required fields correctly.';
                 errorDiv.style.display = 'block';
-                missing[0].focus();
+                if (firstError) firstError.focus();
                 return;
             }
 
@@ -162,9 +168,8 @@
                     <button onclick="downloadReceipt('${data.referenceNumber}')" class="btn-receipt"><i class="fas fa-file-pdf"></i> Download Receipt</button>
                 `;
                 this.reset();
-                // Auto-download receipt
-                setTimeout(() => downloadReceipt(data.referenceNumber), 1000);
-                setTimeout(() => document.getElementById('formStatus').className = 'form-status', 15000);
+                setTimeout(() => downloadReceipt(data.referenceNumber), 1200);
+                setTimeout(() => document.getElementById('formStatus').className = 'form-status', 20000);
             })
             .catch(err => {
                 document.getElementById('formStatus').className = 'form-status error';
@@ -176,9 +181,9 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        // ----- Receipt PDF (uses server data) -----
+        // ----- RECEIPT PDF -----
         function downloadReceipt(ref) {
-            fetch(`/api/applications`)
+            fetch('/api/applications')
                 .then(res => res.json())
                 .then(apps => {
                     const app = apps.find(a => a.referenceNumber === ref);
@@ -189,7 +194,6 @@
         }
 
         function generateReceiptPDF(app) {
-            // Show progress
             const overlay = document.getElementById('progressOverlay');
             overlay.style.display = 'flex';
             const bar = document.getElementById('progressBar');
@@ -266,7 +270,7 @@
             });
         }
 
-        // Add receipt button style
+        // Style for receipt button
         const style = document.createElement('style');
         style.textContent = `
             .btn-receipt { background:#6C63FF; color:#fff; border:none; padding:10px 25px; border-radius:6px; cursor:pointer; font-weight:600; margin-top:10px; }
