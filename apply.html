@@ -6,6 +6,8 @@
     <title>Apply for Certificate</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header>
@@ -29,14 +31,22 @@
     <section class="apply-section">
         <div class="container">
             <h2>Apply for <span id="certName">Certificate</span></h2>
-            <p class="sub">Fill in all required details below</p>
-            <form id="applyForm" class="apply-form">
-                <div id="formFields">
-                    <!-- Dynamic fields -->
-                </div>
+            <p class="sub">Fill in all required details below (<span style="color:#dc3545;">*</span> required)</p>
+            <form id="applyForm" class="apply-form" novalidate>
+                <div id="formFields"></div>
                 <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit Application</button>
             </form>
             <div id="formStatus" class="form-status"></div>
+            <div id="progressOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:none;justify-content:center;align-items:center;flex-direction:column;">
+                <div style="background:#fff;padding:40px;border-radius:12px;text-align:center;max-width:400px;width:90%;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:3rem;color:#6C63FF;margin-bottom:15px;"></i>
+                    <h3 id="progressText">Generating your receipt...</h3>
+                    <div style="width:100%;height:10px;background:#eee;border-radius:5px;margin:15px 0;overflow:hidden;">
+                        <div id="progressBar" style="width:0%;height:100%;background:#6C63FF;border-radius:5px;transition:width 0.3s;"></div>
+                    </div>
+                    <p id="progressSub" style="color:#666;font-size:0.9rem;">Please wait</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -56,11 +66,11 @@
         };
         const fieldLabels = {
             fullName: 'Full Name *', email: 'Email Address *', phone: 'Phone Number *', address: 'Address *',
-            comedyStyle: 'Comedy Style', yearsExp: 'Years of Experience', bestJoke: 'Best Joke', videoLink: 'Video Link', socialHandle: 'Social Media Handle',
-            heightCm: 'Height (cm) *', city: 'City', state: 'State', dob: 'Date of Birth', profession: 'Profession', proofHeight: 'Proof of Height (link)',
-            netWorth: 'Net Worth (USD) *', sourceWealth: 'Source of Wealth', businessName: 'Business Name', yearsSuccess: 'Years of Success', panNumber: 'PAN Number',
-            globalPresence: 'Global Presence (Countries)', industryType: 'Industry Type',
-            platform: 'Primary Platform', followers: 'Followers Count', contentNiche: 'Content Niche', yearsActive: 'Years Active', bestContentLink: 'Best Content Link'
+            comedyStyle: 'Comedy Style *', yearsExp: 'Years of Experience *', bestJoke: 'Best Joke *', videoLink: 'Video Link', socialHandle: 'Social Media Handle',
+            heightCm: 'Height (cm) *', city: 'City *', state: 'State *', dob: 'Date of Birth *', profession: 'Profession *', proofHeight: 'Proof of Height (link)',
+            netWorth: 'Net Worth (USD) *', sourceWealth: 'Source of Wealth *', businessName: 'Business Name *', yearsSuccess: 'Years of Success *', panNumber: 'PAN Number *',
+            globalPresence: 'Global Presence (Countries)', industryType: 'Industry Type *',
+            platform: 'Primary Platform *', followers: 'Followers Count *', contentNiche: 'Content Niche *', yearsActive: 'Years Active *', bestContentLink: 'Best Content Link *'
         };
         const fieldTypes = {
             fullName: 'text', email: 'email', phone: 'tel', address: 'text', comedyStyle: 'text', yearsExp: 'number', bestJoke: 'text', videoLink: 'url', socialHandle: 'text',
@@ -74,16 +84,58 @@
         const certData = certTypes[certType] || certTypes['funniest-man'];
         document.getElementById('certName').textContent = certData.name;
 
+        // Build form fields
         const container = document.getElementById('formFields');
         container.innerHTML = certData.fields.map(f => `
             <div class="form-group">
                 <label for="${f}"><i class="fas ${f==='fullName'?'fa-user':f==='email'?'fa-envelope':f==='phone'?'fa-phone':'fa-pen'}"></i> ${fieldLabels[f] || f}</label>
-                <input type="${fieldTypes[f] || 'text'}" id="${f}" name="${f}" ${f.includes('*')?'required':''} placeholder="Enter ${fieldLabels[f]?.replace('*','').trim() || f}" />
+                <input type="${fieldTypes[f] || 'text'}" id="${f}" name="${f}" ${f.includes('*')?'required':''} placeholder="Enter ${(fieldLabels[f]||f).replace('*','').trim()}" />
             </div>
         `).join('');
 
+        // ---------- FORM SUBMISSION WITH VALIDATION ----------
         document.getElementById('applyForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Validate all required fields
+            const required = this.querySelectorAll('[required]');
+            let valid = true;
+            let firstError = null;
+            
+            required.forEach(field => {
+                if (!field.value.trim()) {
+                    valid = false;
+                    field.style.borderColor = '#dc3545';
+                    field.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
+                    if (!firstError) firstError = field;
+                } else {
+                    field.style.borderColor = '';
+                    field.style.boxShadow = '';
+                }
+            });
+            
+            // Email validation
+            const email = document.getElementById('email');
+            if (email && email.value.trim() && !validateEmail(email.value.trim())) {
+                valid = false;
+                email.style.borderColor = '#dc3545';
+                email.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
+                document.getElementById('formStatus').className = 'form-status error';
+                document.getElementById('formStatus').innerHTML = '❌ Please enter a valid email address.';
+                if (!firstError) firstError = email;
+            }
+            
+            if (!valid) {
+                if (firstError) firstError.focus();
+                if (!document.getElementById('formStatus').innerHTML.includes('email')) {
+                    document.getElementById('formStatus').className = 'form-status error';
+                    document.getElementById('formStatus').innerHTML = '❌ Please fill in all required fields.';
+                }
+                setTimeout(() => document.getElementById('formStatus').className = 'form-status', 5000);
+                return;
+            }
+
+            // Collect data
             const formData = new FormData(this);
             const data = {};
             certData.fields.forEach(f => data[f] = formData.get(f) || '');
@@ -91,12 +143,16 @@
             data.certificateName = certData.name;
             data.status = 'pending';
             data.submittedAt = new Date().toISOString();
-            const ref = 'REF-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+            const ref = generateRef();
             data.referenceNumber = ref;
-            const apps = JSON.parse(localStorage.getItem('certApplications') || '[]');
             data.id = Date.now();
+
+            // Save to localStorage
+            const apps = getApplications();
             apps.push(data);
-            localStorage.setItem('certApplications', JSON.stringify(apps));
+            saveApplications(apps);
+
+            // Show success with ref
             document.getElementById('formStatus').className = 'form-status success';
             document.getElementById('formStatus').innerHTML = `
                 ✅ <strong>Application Submitted!</strong><br>
@@ -104,10 +160,113 @@
                 Your Reference Number: <strong style="color:#6C63FF;font-size:1.2rem;">${ref}</strong><br>
                 You will receive your certificate within 7 working days.<br>
                 <small>Use this reference number to track your application status.</small>
+                <br><br>
+                <button onclick="downloadReceipt('${ref}')" class="btn-receipt"><i class="fas fa-file-pdf"></i> Download Receipt</button>
             `;
             this.reset();
-            setTimeout(() => document.getElementById('formStatus').className = 'form-status', 8000);
+
+            // Auto-download receipt after 1s
+            setTimeout(() => downloadReceipt(ref), 1000);
+            setTimeout(() => document.getElementById('formStatus').className = 'form-status', 15000);
         });
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // ---------- DOWNLOAD RECEIPT PDF ----------
+        function downloadReceipt(ref) {
+            const apps = getApplications();
+            const app = apps.find(a => a.referenceNumber === ref);
+            if (!app) { alert('Receipt not found.'); return; }
+
+            // Show progress
+            const overlay = document.getElementById('progressOverlay');
+            overlay.style.display = 'flex';
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressSub = document.getElementById('progressSub');
+            
+            progressText.textContent = 'Generating your receipt...';
+            progressSub.textContent = 'Please wait';
+            let pct = 0;
+            const interval = setInterval(() => {
+                pct += Math.random() * 15 + 5;
+                if (pct > 90) pct = 90;
+                progressBar.style.width = pct + '%';
+            }, 200);
+
+            // Build receipt HTML
+            const receiptHTML = `
+                <div id="receiptContainer" style="
+                    width:600px; padding:40px; background:#fff; font-family:'Segoe UI',Arial,sans-serif;
+                    border:2px solid #6C63FF; border-radius:8px; margin:0 auto; position:relative;
+                ">
+                    <div style="text-align:center; border-bottom:3px solid #6C63FF; padding-bottom:15px; margin-bottom:20px;">
+                        <h1 style="color:#6C63FF; font-size:28px; margin:0;">🏛️ CertPortal</h1>
+                        <p style="color:#666; margin:5px 0 0; font-size:14px;">Office of the Commissioner</p>
+                    </div>
+                    <h2 style="text-align:center; font-size:20px; color:#2D2D3F; margin:10px 0;">ACKNOWLEDGEMENT RECEIPT</h2>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0;">
+                        <p><strong>Reference No:</strong> ${app.referenceNumber}</p>
+                        <p><strong>Date:</strong> ${new Date(app.submittedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</p>
+                        <p><strong>Applicant:</strong> ${app.fullName}</p>
+                        <p><strong>Certificate:</strong> ${app.certificateName}</p>
+                        <p><strong>Email:</strong> ${app.email}</p>
+                        <p><strong>Phone:</strong> ${app.phone}</p>
+                    </div>
+                    <div style="background:#f8f9fc; padding:15px; border-radius:6px; margin:15px 0;">
+                        <p style="margin:0; color:#333; font-size:15px; line-height:1.6;">
+                            Dear <strong>${app.fullName}</strong>,<br>
+                            Your application for <strong>${app.certificateName}</strong> has been received successfully.
+                            It will be processed within 7 working days. You will be notified once approved.
+                        </p>
+                    </div>
+                    <div style="text-align:center; margin-top:20px; padding-top:15px; border-top:1px solid #eee; font-size:12px; color:#999;">
+                        This is a system-generated receipt. For queries, contact support@certportal.com
+                    </div>
+                </div>
+            `;
+
+            // Render and convert to PDF
+            const container = document.createElement('div');
+            container.innerHTML = receiptHTML;
+            document.body.appendChild(container);
+            const receiptEl = document.getElementById('receiptContainer');
+
+            html2canvas(receiptEl, { scale: 2, useCORS: true, backgroundColor: '#fff' }).then(canvas => {
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                progressText.textContent = '✅ Receipt generated!';
+                progressSub.textContent = 'Downloading...';
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const pdfWidth = 210;
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Receipt_${app.referenceNumber}.pdf`);
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    document.body.removeChild(container);
+                }, 1000);
+            }).catch(err => {
+                clearInterval(interval);
+                overlay.style.display = 'none';
+                document.body.removeChild(container);
+                alert('Error generating receipt: ' + err.message);
+            });
+        }
+
+        // Add receipt button style dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn-receipt { background:#6C63FF; color:#fff; border:none; padding:10px 25px; border-radius:6px; cursor:pointer; font-weight:600; margin-top:10px; }
+            .btn-receipt:hover { background:#5A52D5; }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
