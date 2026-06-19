@@ -3,114 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServicePortal – Apply for Services</title>
+    <title>Certificate Portal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
     <header>
         <nav class="navbar">
             <div class="container">
-                <div class="logo">
-                    <i class="fas fa-handshake"></i>
-                    <span>ServicePortal</span>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#services">Services</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="service-detail.html" class="btn-primary">Apply Now</a></li>
-                    <li><a href="admin-portal.html" class="btn-admin">🔐 Admin</a></li>
+                <div class="logo"><i class="fas fa-award"></i> CertPortal</div>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="apply.html">Apply</a></li>
+                    <li><a href="status.html">Track Status</a></li>
+                    <li><a href="download.html">Download Certificate</a></li>
+                    <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
                 </ul>
-                <div class="hamburger">
+                <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')">
                     <span></span><span></span><span></span>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Hero -->
-    <section id="home" class="hero">
+    <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Find & Apply for <span>Services</span> You Need</h1>
-                <p>Browse through hundreds of professional services and apply in minutes. Fast, secure, and reliable.</p>
-                <div class="hero-buttons">
-                    <a href="#services" class="btn-primary">Browse Services</a>
-                    <a href="#how-it-works" class="btn-secondary">Learn More</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <i class="fas fa-users-cog"></i>
+                <h1>Official <span>Certificates</span> of Recognition</h1>
+                <p>Apply for prestigious certificates and get officially recognized for your achievements.</p>
+                <a href="apply.html" class="btn-primary">Apply Now <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     </section>
 
-    <!-- Services -->
-    <section id="services" class="services">
+    <section class="services">
         <div class="container">
-            <h2>Our <span>Services</span></h2>
-            <p class="section-subtitle">Click on any service to apply</p>
-            <div class="service-grid" id="serviceGrid"></div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <h2>How It <span>Works</span></h2>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <i class="fas fa-search"></i>
-                    <h3>Browse Services</h3>
-                    <p>Explore our catalog and find what you need</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <i class="fas fa-file-signature"></i>
-                    <h3>Fill Application</h3>
-                    <p>Complete the form with your details</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <i class="fas fa-check-circle"></i>
-                    <h3>Get Approved</h3>
-                    <p>Receive confirmation and start using the service</p>
-                </div>
+            <h2>Available <span>Certificates</span></h2>
+            <div class="service-grid" id="certGrid">
+                <!-- Loaded by JavaScript -->
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3><i class="fas fa-handshake"></i> ServicePortal</h3>
-                    <p>Your trusted platform for professional services</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <p><i class="fas fa-envelope"></i> support@serviceportal.com</p>
-                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>All Rights Reserved @dEMO</p>
-            </div>
+            <div class="footer-bottom"><p>All Rights Reserved @dEMO</p></div>
         </div>
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        const certificates = [
+            { id: 'funniest-man', name: 'Funniest Man of the Year', icon: 'fa-face-laugh', desc: 'Recognized for outstanding humor and entertainment.' },
+            { id: 'tallest-man', name: 'Tallest Man of India', icon: 'fa-person', desc: 'Officially recognized for exceptional height.' },
+            { id: 'millionaire', name: 'Millionaire Certificate', icon: 'fa-coins', desc: 'Recognition of achieving millionaire status.' },
+            { id: 'billionaire', name: 'Billionaire Certificate', icon: 'fa-gem', desc: 'Recognition of achieving billionaire status.' },
+            { id: 'trillionaire', name: 'Trillionaire Certificate', icon: 'fa-crown', desc: 'Recognition of achieving trillionaire status.' },
+            { id: 'content-creator', name: 'Content Creator Certificate', icon: 'fa-video', desc: 'Recognized for excellence in content creation.' }
+        ];
+        const grid = document.getElementById('certGrid');
+        grid.innerHTML = certificates.map(c => `
+            <div class="service-card">
+                <i class="fas ${c.icon}"></i>
+                <h3>${c.name}</h3>
+                <p>${c.desc}</p>
+                <a href="apply.html?type=${c.id}" class="apply-btn">Apply <i class="fas fa-arrow-right"></i></a>
+            </div>
+        `).join('');
+    </script>
 </body>
 </html>
