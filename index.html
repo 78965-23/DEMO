@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Portal</title>
+    <title>CertPortal – Official Certificates</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -15,11 +15,11 @@
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html" class="active">Home</a></li>
                     <li><a href="apply.html">Apply</a></li>
-                    <li><a href="status.html">Track Status</a></li>
-                    <li><a href="download.html">Download Certificate</a></li>
+                    <li><a href="status.html">Track</a></li>
+                    <li><a href="download.html">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
                 </ul>
-                <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')">
+                <div class="hamburger" onclick="toggleMenu()">
                     <span></span><span></span><span></span>
                 </div>
             </div>
@@ -39,9 +39,7 @@
     <section class="services">
         <div class="container">
             <h2>Available <span>Certificates</span></h2>
-            <div class="service-grid" id="certGrid">
-                <!-- Loaded by JavaScript -->
-            </div>
+            <div class="service-grid" id="certGrid"></div>
         </div>
     </section>
 
