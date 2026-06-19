@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Service Portal - Apply for Services</title>
+    <title>ServicePortal - Apply for Services</title>
     <link rel="stylesheet" href="/style.css">
-</head>
 <body>
     <!-- Header / Navigation -->
     <header>
@@ -19,7 +18,7 @@
                     <li><a href="#home">Home</a></li>
                     <li><a href="#services">Services</a></li>
                     <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#apply" class="btn-primary">Apply Now</a></li>
+                    <li><a href="service-detail.html" class="btn-primary">Apply Now</a></li>
                 </ul>
                 <div class="hamburger">
                     <span></span>
@@ -47,11 +46,11 @@
         </div>
     </section>
 
-    <!-- Services Section - UPDATED -->
+    <!-- Services Section - ONLY SERVICE NAMES -->
     <section id="services" class="services">
         <div class="container">
             <h2>Our <span>Services</span></h2>
-            <p class="section-subtitle">Choose from a wide range of professional services</p>
+            <p class="section-subtitle">Click on any service to apply</p>
             
             <div class="service-grid" id="serviceGrid">
                 <!-- Services will be loaded dynamically -->
@@ -86,63 +85,7 @@
         </div>
     </section>
 
-    <!-- Application Form -->
-    <section id="apply" class="apply-section">
-        <div class="container">
-            <h2>Apply for <span>Service</span></h2>
-            <p class="section-subtitle">Fill out the form below to get started</p>
-            
-            <form id="applicationForm" class="application-form">
-                <div class="form-group">
-                    <label for="fullName"><i class="fas fa-user"></i> Full Name *</label>
-                    <input type="text" id="fullName" placeholder="Enter your full name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email Address *</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone"><i class="fas fa-phone"></i> Phone Number *</label>
-                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="serviceSelect"><i class="fas fa-list"></i> Select Service *</label>
-                    <select id="serviceSelect" required>
-                        <option value="">Choose a service...</option>
-                        <option value="web-development">Web Development</option>
-                        <option value="mobile-app">Mobile App Development</option>
-                        <option value="ui-ux">UI/UX Design</option>
-                        <option value="digital-marketing">Digital Marketing</option>
-                        <option value="content-writing">Content Writing</option>
-                        <option value="graphic-design">Graphic Design</option>
-                        <option value="video-editing">Video Editing</option>
-                        <option value="it-consulting">IT Consulting</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="message"><i class="fas fa-comment"></i> Additional Details</label>
-                    <textarea id="message" rows="4" placeholder="Tell us more about your requirements..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="documents"><i class="fas fa-paperclip"></i> Upload Documents (Optional)</label>
-                    <input type="file" id="documents" multiple accept=".pdf,.doc,.docx,.jpg,.png">
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-paper-plane"></i> Submit Application
-                </button>
-            </form>
-
-            <div id="formStatus" class="form-status"></div>
-        </div>
-    </section>
-
-    <!-- Footer - UPDATED -->
+    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
