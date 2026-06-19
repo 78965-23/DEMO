@@ -1,4 +1,4 @@
-// Admin Portal JavaScript – Password: 08092003
+// Admin Portal – Password: 08092003
 const ADMIN_PASSWORD = '08092003';
 const MAX_ATTEMPTS = 3;
 let loginAttempts = 0;
@@ -6,7 +6,9 @@ const STATUS = { PENDING:'pending', REVIEWED:'reviewed', APPROVED:'approved', RE
 
 // ---------- Password handling ----------
 function handlePasswordSubmit(event) {
-    event.preventDefault();
+    event.preventDefault(); // ✅ Stop page reload
+    console.log('Password form submitted');
+
     const passwordInput = document.getElementById('adminPasswordInput');
     const errorDiv = document.getElementById('passwordError');
     const attemptCounter = document.getElementById('attemptCounter');
@@ -14,6 +16,7 @@ function handlePasswordSubmit(event) {
     const unlockBtn = document.getElementById('unlockBtn');
     const entered = passwordInput.value.trim();
 
+    // Check if already locked
     if (loginAttempts >= MAX_ATTEMPTS) {
         errorDiv.textContent = '🔒 Account locked. Please contact administrator.';
         errorDiv.className = 'error-message show';
@@ -23,16 +26,18 @@ function handlePasswordSubmit(event) {
     }
 
     if (entered === ADMIN_PASSWORD) {
-        // Success
+        // ✅ SUCCESS – unlock dashboard
+        console.log('✅ Password correct – opening dashboard');
         errorDiv.className = 'error-message';
         document.getElementById('passwordOverlay').style.display = 'none';
-        document.getElementById('adminDashboard').className = 'admin-dashboard show';
+        document.getElementById('adminDashboard').classList.add('show');
         document.body.style.overflow = 'auto';
-        loadApplications();
+        localStorage.setItem('adminAccess', 'granted');
         loginAttempts = 0;
         attemptCounter.className = 'attempt-counter';
-        localStorage.setItem('adminAccess', 'granted');
+        loadApplications(); // load data
     } else {
+        // ❌ Wrong password
         loginAttempts++;
         const remaining = MAX_ATTEMPTS - loginAttempts;
         errorDiv.textContent = '❌ Incorrect password. Please try again.';
@@ -44,6 +49,8 @@ function handlePasswordSubmit(event) {
         }
         passwordInput.value = '';
         passwordInput.focus();
+
+        // Lock after max attempts
         if (loginAttempts >= MAX_ATTEMPTS) {
             errorDiv.textContent = '🔒 Account locked. Maximum attempts exceeded.';
             errorDiv.className = 'error-message show';
@@ -52,16 +59,19 @@ function handlePasswordSubmit(event) {
             attemptCounter.className = 'attempt-counter show';
             attemptCountSpan.textContent = '0';
         }
-        // Shake
-        document.querySelector('.password-box').style.animation = 'none';
-        setTimeout(() => document.querySelector('.password-box').style.animation = 'shake 0.5s ease', 10);
+        // Shake animation
+        const box = document.querySelector('.password-box');
+        box.style.animation = 'none';
+        setTimeout(() => box.style.animation = 'shake 0.5s ease', 10);
     }
 }
 
+// Check if already authenticated (session)
 function checkAdminAuth() {
     if (localStorage.getItem('adminAccess') === 'granted') {
+        console.log('🔄 Session found – auto‑logging in');
         document.getElementById('passwordOverlay').style.display = 'none';
-        document.getElementById('adminDashboard').className = 'admin-dashboard show';
+        document.getElementById('adminDashboard').classList.add('show');
         document.body.style.overflow = 'auto';
         loadApplications();
     }
@@ -161,7 +171,7 @@ function showAdminSuccess(msg) {
 // ---------- Logout ----------
 function logoutAdmin() {
     localStorage.removeItem('adminAccess');
-    document.getElementById('adminDashboard').className = 'admin-dashboard';
+    document.getElementById('adminDashboard').classList.remove('show');
     document.getElementById('passwordOverlay').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     document.getElementById('adminPasswordInput').value = '';
@@ -188,7 +198,14 @@ function exportToCSV() {
 
 // ---------- Init ----------
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('passwordForm').addEventListener('submit', handlePasswordSubmit);
+    console.log('🛡️ Admin JS loaded');
+    const form = document.getElementById('passwordForm');
+    if (form) {
+        form.addEventListener('submit', handlePasswordSubmit);
+        console.log('✅ Password form listener attached');
+    } else {
+        console.error('❌ Password form not found!');
+    }
     checkAdminAuth();
     document.getElementById('adminPasswordInput').focus();
 });
