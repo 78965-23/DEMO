@@ -10,8 +10,11 @@ PORT = 8000
 DATA_FILE = 'data.json'
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
+    
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        
+        # API endpoint – return JSON
         if parsed.path == '/api/applications':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -20,6 +23,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             data = self.read_data()
             self.wfile.write(json.dumps(data).encode())
             return
+        
+        # Serve static files (HTML, CSS, JS)
         return super().do_GET()
 
     def do_POST(self):
@@ -39,9 +44,12 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps(new_app).encode())
             except Exception as e:
                 self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'error': str(e)}).encode())
             return
+        
+        # If not API, return 404
         self.send_response(404)
         self.end_headers()
 
@@ -61,7 +69,9 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                         break
                 if not found:
                     self.send_response(404)
+                    self.send_header('Content-Type', 'application/json')
                     self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'Application not found'}).encode())
                     return
                 self.write_data(data)
                 self.send_response(200)
@@ -71,6 +81,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps(update_data).encode())
             except Exception as e:
                 self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'error': str(e)}).encode())
             return
@@ -93,14 +104,21 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
     def read_data(self):
         if not os.path.exists(DATA_FILE):
             return []
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
+        try:
+            with open(DATA_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return []
 
     def write_data(self, data):
         with open(DATA_FILE, 'w') as f:
             json.dump(data, f, indent=2)
 
 if __name__ == '__main__':
+    # Clear any old data (optional – comment out if you want to keep data)
+    # if os.path.exists(DATA_FILE):
+    #     os.remove(DATA_FILE)
+    
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
         print(f"✅ Server running at http://localhost:{PORT}")
         print(f"📁 Data stored in {DATA_FILE}")
