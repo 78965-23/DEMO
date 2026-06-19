@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServicePortal - Apply for Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header / Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    <i class="fas fa-handshake"></i>
+                    <span>ServicePortal</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#apply" class="btn-primary">Apply Now</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Find & Apply for <span>Services</span> You Need</h1>
+                <p>Browse through hundreds of professional services and apply in minutes. Fast, secure, and reliable.</p>
+                <div class="hero-buttons">
+                    <a href="#services" class="btn-primary">Browse Services</a>
+                    <a href="#how-it-works" class="btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-users-cog"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section - UPDATED -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2>Our <span>Services</span></h2>
+            <p class="section-subtitle">Choose from a wide range of professional services</p>
+            
+            <div class="service-grid" id="serviceGrid">
+                <!-- Services will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2>How It <span>Works</span></h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <i class="fas fa-search"></i>
+                    <h3>Browse Services</h3>
+                    <p>Explore our catalog of services and find what you need</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <i class="fas fa-file-signature"></i>
+                    <h3>Fill Application</h3>
+                    <p>Complete the application form with your details</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Get Approved</h3>
+                    <p>Receive confirmation and start using the service</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Application Form -->
+    <section id="apply" class="apply-section">
+        <div class="container">
+            <h2>Apply for <span>Service</span></h2>
+            <p class="section-subtitle">Fill out the form below to get started</p>
+            
+            <form id="applicationForm" class="application-form">
+                <div class="form-group">
+                    <label for="fullName"><i class="fas fa-user"></i> Full Name *</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address *</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i> Phone Number *</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="serviceSelect"><i class="fas fa-list"></i> Select Service *</label>
+                    <select id="serviceSelect" required>
+                        <option value="">Choose a service...</option>
+                        <option value="web-development">Web Development</option>
+                        <option value="mobile-app">Mobile App Development</option>
+                        <option value="ui-ux">UI/UX Design</option>
+                        <option value="digital-marketing">Digital Marketing</option>
+                        <option value="content-writing">Content Writing</option>
+                        <option value="graphic-design">Graphic Design</option>
+                        <option value="video-editing">Video Editing</option>
+                        <option value="it-consulting">IT Consulting</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message"><i class="fas fa-comment"></i> Additional Details</label>
+                    <textarea id="message" rows="4" placeholder="Tell us more about your requirements..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="documents"><i class="fas fa-paperclip"></i> Upload Documents (Optional)</label>
+                    <input type="file" id="documents" multiple accept=".pdf,.doc,.docx,.jpg,.png">
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+            </form>
+
+            <div id="formStatus" class="form-status"></div>
+        </div>
+    </section>
+
+    <!-- Footer - UPDATED -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-handshake"></i> ServicePortal</h3>
+                    <p>Your trusted platform for professional services</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> support@serviceportal.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>All Rights Reserved @dEMO</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
