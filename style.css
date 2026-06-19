@@ -1,27 +1,57 @@
+/* ===== RESET ===== */
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6f9; color:#2D2D3F; }
 .container { max-width:1200px; margin:0 auto; padding:0 20px; }
 
-/* Navbar */
+/* ===== NAVBAR ===== */
 .navbar { background:#fff; padding:15px 0; box-shadow:0 2px 10px rgba(0,0,0,0.08); position:sticky; top:0; z-index:1000; }
 .navbar .container { display:flex; justify-content:space-between; align-items:center; }
 .logo { font-size:1.5rem; font-weight:700; color:#6C63FF; }
 .logo i { margin-right:8px; }
-.nav-links { display:flex; list-style:none; gap:25px; align-items:center; flex-wrap:wrap; }
-.nav-links a { text-decoration:none; color:#333; font-weight:500; transition:color 0.3s; }
-.nav-links a:hover, .nav-links a.active { color:#6C63FF; }
-.btn-admin { background:#2D2D3F; color:#fff !important; padding:8px 20px; border-radius:50px; }
-.btn-admin:hover { background:#1a1a2e; color:#fff !important; }
-.hamburger { display:none; flex-direction:column; cursor:pointer; }
-.hamburger span { width:28px; height:3px; background:#333; margin:3px 0; border-radius:2px; }
 
-/* Hero */
+.nav-links { display:flex; list-style:none; gap:25px; align-items:center; flex-wrap:wrap; }
+.nav-links a { text-decoration:none; color:#333; font-weight:500; transition:color 0.3s; padding:6px 0; }
+.nav-links a:hover, .nav-links a.active { color:#6C63FF; }
+.btn-admin { background:#2D2D3F; color:#fff !important; padding:8px 22px; border-radius:50px; transition:0.3s; }
+.btn-admin:hover { background:#1a1a2e; color:#fff !important; }
+.btn-admin.active { background:#6C63FF; }
+
+/* ===== HAMBURGER ===== */
+.hamburger { display:none; flex-direction:column; cursor:pointer; }
+.hamburger span { width:28px; height:3px; background:#333; margin:3px 0; border-radius:2px; transition:0.3s; }
+
+/* ===== RESPONSIVE NAV ===== */
+@media (max-width:768px) {
+    .hamburger { display:flex; }
+    .nav-links {
+        display:none;
+        position:absolute;
+        top:70px;
+        left:0;
+        right:0;
+        background:#fff;
+        flex-direction:column;
+        padding:20px;
+        box-shadow:0 10px 20px rgba(0,0,0,0.1);
+        gap:12px;
+        z-index:999;
+        border-top:1px solid #eee;
+    }
+    .nav-links.active { display:flex; }
+    .nav-links li { width:100%; text-align:center; }
+    .nav-links a { display:block; padding:10px 0; }
+    .btn-admin { display:inline-block; width:auto; margin:0 auto; }
+}
+
+/* ===== HERO ===== */
 .hero { padding:80px 0 60px; background:linear-gradient(135deg,#f5f7ff,#e8ecff); text-align:center; }
 .hero h1 { font-size:2.8rem; margin-bottom:15px; }
 .hero h1 span { color:#6C63FF; }
 .hero p { font-size:1.2rem; color:#666; max-width:600px; margin:0 auto 25px; }
+.btn-primary { display:inline-block; padding:14px 40px; background:#6C63FF; color:#fff; border-radius:50px; text-decoration:none; font-weight:600; transition:0.3s; }
+.btn-primary:hover { background:#5A52D5; transform:translateY(-2px); box-shadow:0 8px 25px rgba(108,99,255,0.3); }
 
-/* Services / Certificates */
+/* ===== SERVICES / CERTIFICATES ===== */
 .services { padding:60px 0; background:#fff; }
 .services h2 { text-align:center; font-size:2.2rem; margin-bottom:10px; }
 .services h2 span { color:#6C63FF; }
@@ -31,10 +61,10 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6
 .service-card i { font-size:2.8rem; color:#6C63FF; margin-bottom:15px; }
 .service-card h3 { font-size:1.2rem; margin-bottom:8px; }
 .service-card p { color:#666; font-size:0.95rem; margin-bottom:15px; }
-.apply-btn { display:inline-block; padding:8px 30px; background:#6C63FF; color:#fff; border-radius:50px; text-decoration:none; font-weight:600; transition:all 0.3s; }
+.apply-btn { display:inline-block; padding:8px 30px; background:#6C63FF; color:#fff; border-radius:50px; text-decoration:none; font-weight:600; transition:0.3s; }
 .apply-btn:hover { background:#5A52D5; transform:scale(1.03); }
 
-/* Apply Form */
+/* ===== APPLY FORM ===== */
 .apply-section { padding:60px 0; background:#f8f9fc; }
 .apply-section h2 { text-align:center; font-size:2rem; }
 .apply-section h2 span { color:#6C63FF; }
@@ -45,14 +75,14 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6
 .form-group label i { color:#6C63FF; margin-right:6px; }
 .form-group input { width:100%; padding:12px 14px; border:1px solid #ddd; border-radius:6px; font-size:1rem; transition:border 0.3s; }
 .form-group input:focus { outline:none; border-color:#6C63FF; box-shadow:0 0 0 3px rgba(108,99,255,0.1); }
-.btn-submit { width:100%; padding:14px; background:#6C63FF; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer; transition:all 0.3s; margin-top:5px; }
+.btn-submit { width:100%; padding:14px; background:#6C63FF; color:#fff; border:none; border-radius:6px; font-size:1.1rem; font-weight:600; cursor:pointer; transition:0.3s; margin-top:5px; }
 .btn-submit:hover { background:#5A52D5; transform:translateY(-2px); box-shadow:0 8px 25px rgba(108,99,255,0.25); }
 .btn-submit i { margin-right:8px; }
 .form-status { margin-top:20px; padding:15px; border-radius:6px; text-align:center; display:none; }
 .form-status.success { display:block; background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
 .form-status.error { display:block; background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
 
-/* Status Tracking */
+/* ===== STATUS TRACKING ===== */
 .status-section { padding:60px 0; background:#f8f9fc; }
 .status-section h2 { text-align:center; font-size:2rem; }
 .status-section h2 span { color:#6C63FF; }
@@ -65,9 +95,6 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6
 .status-card { background:#fff; padding:25px; border-radius:8px; box-shadow:0 2px 15px rgba(0,0,0,0.06); }
 .status-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; }
 .status-badge { padding:5px 15px; border-radius:50px; font-weight:600; font-size:0.85rem; }
-.badge-pending { background:#fff3cd; color:#856404; }
-.badge-approved { background:#d4edda; color:#155724; }
-.badge-rejected { background:#f8d7da; color:#721c24; }
 .status-badge.pending { background:#fff3cd; color:#856404; }
 .status-badge.approved { background:#d4edda; color:#155724; }
 .status-badge.rejected { background:#f8d7da; color:#721c24; }
@@ -75,7 +102,7 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6
 .status-body p { margin:6px 0; }
 .status-error { background:#f8d7da; color:#721c24; padding:15px; border-radius:6px; text-align:center; }
 
-/* Download */
+/* ===== DOWNLOAD ===== */
 .download-section { padding:60px 0; background:#f8f9fc; }
 .download-section h2 { text-align:center; font-size:2rem; }
 .download-section h2 span { color:#6C63FF; }
@@ -86,90 +113,17 @@ body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f6
 .download-box button:hover { background:#218838; }
 .download-result { max-width:600px; margin:20px auto; }
 .status-success { background:#d4edda; color:#155724; padding:15px; border-radius:6px; text-align:center; }
-#certPreview { max-width:800px; margin:0 auto; overflow-x:auto; }
 
-/* Footer */
+/* ===== FOOTER ===== */
 footer { background:#2D2D3F; color:#aaa; padding:30px 0 15px; margin-top:40px; }
 .footer-bottom { text-align:center; border-top:1px solid #444; padding-top:15px; font-size:0.9rem; }
 
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width:768px) {
-    .hamburger { display:flex; }
-    .nav-links { display:none; position:absolute; top:70px; left:0; right:0; background:#fff; flex-direction:column; padding:20px; box-shadow:0 10px 20px rgba(0,0,0,0.1); }
-    .nav-links.active { display:flex; }
     .hero h1 { font-size:2rem; }
     .hero p { font-size:1rem; }
     .service-grid { grid-template-columns:1fr; }
     .apply-form { padding:20px; }
     .status-box, .download-box { flex-direction:column; }
-    .admin-stats { grid-template-columns:1fr 1fr; }
-    .header-row { flex-direction:column; align-items:stretch; }
-    .header-row .left { flex-direction:column; }
-}
-/* Progress overlay */
-.progress-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); z-index: 99999;
-    justify-content: center; align-items: center; flex-direction: column;
-}
-.progress-overlay.show { display: flex; }
-.progress-box {
-    background: #fff; padding: 40px; border-radius: 12px; text-align: center;
-    max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-.progress-box .spinner { font-size: 3rem; color: #6C63FF; margin-bottom: 15px; }
-.progress-box h3 { margin-bottom: 10px; }
-.progress-track { width: 100%; height: 12px; background: #eee; border-radius: 6px; margin: 15px 0; overflow: hidden; }
-.progress-track .bar { height: 100%; background: #6C63FF; border-radius: 6px; width: 0%; transition: width 0.3s; }
-.progress-box .sub { color: #666; font-size: 0.9rem; }
-
-/* Receipt button */
-.btn-receipt { background: #6C63FF; color: #fff; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
-.btn-receipt:hover { background: #5A52D5; }
-
-/* Edit area */
-.edit-area { margin: 15px 0; }
-.edit-area label { font-weight: 600; display: block; margin-bottom: 5px; }
-.edit-area input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
-.edit-area input:focus { outline: none; border-color: #6C63FF; box-shadow: 0 0 0 3px rgba(108,99,255,0.1); }
-
-/* Form validation */
-.form-group input:invalid { border-color: #dc3545; }
-/* Hamburger menu - ensure it works */
-.hamburger {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-}
-.hamburger span {
-    width: 28px;
-    height: 3px;
-    background: #333;
-    margin: 3px 0;
-    transition: 0.3s;
-    border-radius: 2px;
-}
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 25px;
-    align-items: center;
-}
-@media (max-width: 768px) {
-    .hamburger { display: flex; }
-    .nav-links {
-        display: none;
-        position: absolute;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background: #fff;
-        flex-direction: column;
-        padding: 20px;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        gap: 15px;
-        z-index: 999;
-    }
-    .nav-links.active { display: flex; }
-    .nav-links li { width: 100%; text-align: center; }
+    .apply-section h2, .status-section h2, .download-section h2 { font-size:1.6rem; }
 }
