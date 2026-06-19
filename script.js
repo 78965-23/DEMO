@@ -188,3 +188,17 @@ function getApplications() {
 function saveApplications(apps) {
     localStorage.setItem('certApplications', JSON.stringify(apps));
 }
+// Hamburger toggle function
+function toggleMenu() {
+    const nav = document.getElementById('navLinks');
+    if (nav) nav.classList.toggle('active');
+}
+
+// Shared utilities
+function generateRef() {
+    return 'REF-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function generateCertNum() {
+    return 'CERT-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
