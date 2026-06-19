@@ -37,7 +37,7 @@
                 <button onclick="downloadCertificate()"><i class="fas fa-download"></i> Download PDF</button>
             </div>
             <div id="downloadResult" class="download-result"></div>
-            <div id="certPreview" style="display:none;margin-top:30px;"></div>
+            <div id="certPreview" style="display:none;margin-top:30px;max-width:800px;margin:30px auto;overflow:auto;"></div>
         </div>
     </section>
 
@@ -50,33 +50,29 @@
         function downloadCertificate() {
             const input = document.getElementById('certRefInput').value.trim();
             const result = document.getElementById('downloadResult');
-            if (!input) { result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference or certificate number.</div>'; return; }
-            const apps = JSON.parse(localStorage.getItem('certApplications') || '[]');
+            if (!input) {
+                result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference or certificate number.</div>';
+                return;
+            }
+            const apps = getApplications();
             const app = apps.find(a => a.referenceNumber === input || a.certificateNumber === input);
             if (!app) {
-                result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No approved certificate found with this number.</div>';
+                result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this number.</div>';
                 return;
             }
             if (app.status !== 'approved') {
                 result.innerHTML = `<div class="status-error"><i class="fas fa-times-circle"></i> This application is ${app.status}. Only approved certificates can be downloaded.</div>`;
                 return;
             }
-            // Generate certificate
             generateCertPDF(app);
         }
 
         function generateCertPDF(app) {
             const certNum = app.certificateNumber || 'CERT-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
-            if (!app.certificateNumber) { app.certificateNumber = certNum; 
-                const apps = JSON.parse(localStorage.getItem('certApplications') || '[]');
-                const idx = apps.findIndex(a => a.id === app.id);
-                if (idx > -1) { apps[idx].certificateNumber = certNum; localStorage.setItem('certApplications', JSON.stringify(apps)); }
-            }
             const issueDate = app.approvedAt ? new Date(app.approvedAt).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) : new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
             const certName = app.certificateName || app.certificateType || 'Certificate of Recognition';
             const fullName = app.fullName || 'Applicant';
 
-            // Build certificate HTML
             const certHTML = `
                 <div id="certContainer" style="
                     width:800px; padding:50px; background:#faf8f5; border:12px solid #c9a96e;
@@ -104,12 +100,13 @@
                 </div>
             `;
 
-            // Show preview
             const preview = document.getElementById('certPreview');
             preview.style.display = 'block';
             preview.innerHTML = certHTML;
 
-            // Generate PDF using html2canvas + jsPDF
+            const result = document.getElementById('downloadResult');
+            result.innerHTML = '<div class="status-success"><i class="fas fa-spinner fa-spin"></i> Generating certificate PDF...</div>';
+
             const container = document.getElementById('certContainer');
             html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#faf8f5' }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
@@ -118,12 +115,15 @@
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Certificate_${fullName.replace(/\s/g,'_')}_${certNum}.pdf`);
-                document.getElementById('downloadResult').innerHTML = `<div class="status-success"><i class="fas fa-check-circle"></i> Certificate downloaded successfully!</div>`;
+                result.innerHTML = `<div class="status-success"><i class="fas fa-check-circle"></i> Certificate downloaded successfully!</div>`;
             }).catch(err => {
-                document.getElementById('downloadResult').innerHTML = `<div class="status-error"><i class="fas fa-exclamation-circle"></i> Error generating certificate: ${err.message}</div>`;
+                result.innerHTML = `<div class="status-error"><i class="fas fa-exclamation-circle"></i> Error: ${err.message}</div>`;
             });
         }
-        document.getElementById('certRefInput').addEventListener('keyup', function(e) { if(e.key==='Enter') downloadCertificate(); });
+
+        document.getElementById('certRefInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') downloadCertificate();
+        });
     </script>
 </body>
 </html>
