@@ -21,7 +21,7 @@
                     <li><a href="download.html" class="active">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
                 </ul>
-                <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')">
+                <div class="hamburger" onclick="toggleMenu()">
                     <span></span><span></span><span></span>
                 </div>
             </div>
@@ -47,24 +47,29 @@
 
     <script src="script.js"></script>
     <script>
-        function downloadCertificate() {
+        async function downloadCertificate() {
             const input = document.getElementById('certRefInput').value.trim();
             const result = document.getElementById('downloadResult');
             if (!input) {
                 result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference or certificate number.</div>';
                 return;
             }
-            const apps = getApplications();
-            const app = apps.find(a => a.referenceNumber === input || a.certificateNumber === input);
-            if (!app) {
-                result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this number.</div>';
-                return;
+            try {
+                const res = await fetch('/api/applications');
+                const apps = await res.json();
+                const app = apps.find(a => a.referenceNumber === input || a.certificateNumber === input);
+                if (!app) {
+                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this number.</div>';
+                    return;
+                }
+                if (app.status !== 'approved') {
+                    result.innerHTML = `<div class="status-error"><i class="fas fa-times-circle"></i> This application is ${app.status}. Only approved certificates can be downloaded.</div>`;
+                    return;
+                }
+                generateCertPDF(app);
+            } catch(err) {
+                result.innerHTML = `<div class="status-error"><i class="fas fa-exclamation-circle"></i> Server error: ${err.message}</div>`;
             }
-            if (app.status !== 'approved') {
-                result.innerHTML = `<div class="status-error"><i class="fas fa-times-circle"></i> This application is ${app.status}. Only approved certificates can be downloaded.</div>`;
-                return;
-            }
-            generateCertPDF(app);
         }
 
         function generateCertPDF(app) {
@@ -73,30 +78,32 @@
             const certName = app.certificateName || app.certificateType || 'Certificate of Recognition';
             const fullName = app.fullName || 'Applicant';
 
+            // Updated design: small font, Office of the Commissioner, underline, digital signature
             const certHTML = `
                 <div id="certContainer" style="
-                    width:800px; padding:50px; background:#faf8f5; border:12px solid #c9a96e;
-                    box-shadow:inset 0 0 0 6px #c9a96e; font-family:'Times New Roman',serif; margin:0 auto;
-                    position:relative; text-align:center; min-height:600px; display:flex; flex-direction:column; justify-content:center;
+                    width:800px; padding:50px; background:#faf8f5; border:4px solid #2c3e50;
+                    box-shadow:inset 0 0 0 2px #2c3e50; font-family:'Times New Roman',serif; margin:0 auto;
+                    position:relative; text-align:center; min-height:500px; display:flex; flex-direction:column; justify-content:center;
                 ">
-                    <div style="position:absolute; top:20px; left:20px; right:20px; text-align:center; font-size:14px; color:#8a7a5a; letter-spacing:4px; border-bottom:2px solid #c9a96e; padding-bottom:10px;">
+                    <div style="position:absolute; top:15px; left:0; right:0; text-align:center; font-size:14px; color:#2c3e50; letter-spacing:2px; border-bottom:1px solid #2c3e50; padding-bottom:8px;">
                         OFFICE OF THE COMMISSIONER
                     </div>
-                    <div style="margin:30px 0 20px 0; text-align:center;">
-                        <span style="font-size:22px; font-weight:700; color:#8a2e2e; letter-spacing:6px;">★</span>
+                    <div style="margin-top:30px; text-align:center;">
+                        <span style="font-size:16px; color:#2c3e50; letter-spacing:4px;">★</span>
                     </div>
-                    <h1 style="font-size:38px; color:#2c2c2c; letter-spacing:3px; margin:0; font-weight:400; text-transform:uppercase;">Certificate</h1>
-                    <p style="font-size:16px; color:#6a6a6a; letter-spacing:6px; margin:5px 0 25px 0;">No. ${certNum}</p>
-                    <p style="font-size:20px; color:#4a4a4a; letter-spacing:2px; margin:10px 0;">THIS IS TO CERTIFY THAT</p>
-                    <h2 style="font-size:48px; color:#1a1a1a; letter-spacing:4px; margin:10px 0; font-weight:600; border-bottom:2px solid #c9a96e; display:inline-block; padding:0 40px 10px 40px;">${fullName}</h2>
-                    <p style="font-size:20px; color:#4a4a4a; letter-spacing:2px; margin:20px 0 5px 0;">has been officially recognized as</p>
-                    <h3 style="font-size:36px; color:#8a2e2e; letter-spacing:3px; margin:5px 0 25px 0; font-weight:500;">${certName}</h3>
-                    <p style="font-size:16px; color:#6a6a6a; margin:5px 0;">on this ${issueDate}</p>
-                    <div style="margin-top:30px; display:flex; justify-content:center; gap:60px; border-top:1px solid #ddd; padding-top:25px;">
-                        <div style="text-align:center;"><span style="display:inline-block; width:180px; border-bottom:2px solid #333; padding-bottom:5px;"></span><br><span style="font-size:14px; color:#6a6a6a;">Authority Signature</span></div>
-                        <div style="text-align:center;"><span style="display:inline-block; width:180px; border-bottom:2px solid #333; padding-bottom:5px;"></span><br><span style="font-size:14px; color:#6a6a6a;">Commissioner's Seal</span></div>
+                    <h1 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 10px 0; font-weight:600; text-transform:uppercase;">Certificate</h1>
+                    <p style="font-size:13px; color:#555; letter-spacing:4px; margin:0 0 15px 0;">No. ${certNum}</p>
+                    <p style="font-size:16px; color:#333; letter-spacing:1px; margin:5px 0;">THIS IS TO CERTIFY THAT</p>
+                    <h2 style="font-size:36px; color:#1a1a1a; letter-spacing:2px; margin:5px 0; font-weight:600; text-decoration:underline; text-underline-offset:8px;">${fullName}</h2>
+                    <p style="font-size:16px; color:#333; letter-spacing:1px; margin:15px 0 5px 0;">has been officially recognized as</p>
+                    <h3 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 20px 0; font-weight:500; text-decoration:underline; text-underline-offset:6px;">${certName}</h3>
+                    <p style="font-size:14px; color:#555; margin:5px 0;">on this ${issueDate}</p>
+                    <div style="margin-top:25px; border-top:1px solid #ddd; padding-top:15px; font-size:12px; color:#444; text-align:center;">
+                        <p style="margin:5px 0;"><strong>Digitally signed by</strong></p>
+                        <p style="margin:0; font-weight:600; font-size:14px; color:#1a1a1a;">Janamat Sankar, IAS</p>
+                        <p style="margin:2px 0 0; font-size:11px; color:#777;">Commissioner of Certifications</p>
                     </div>
-                    <div style="margin-top:15px; font-size:12px; color:#aaa; letter-spacing:2px;">This certificate is issued by the Office of the Commissioner</div>
+                    <div style="margin-top:10px; font-size:10px; color:#aaa; letter-spacing:1px;">This certificate is issued by the Office of the Commissioner</div>
                 </div>
             `;
 
