@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - ServicePortal</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Admin Portal Specific Styles */
+        .admin-login {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: var(--white);
+            border-radius: 2px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .admin-login h2 {
+            margin-bottom: 10px;
+        }
+
+        .admin-login .login-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .admin-login .form-group {
+            text-align: left;
+        }
+
+        .admin-login .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 2px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .admin-login .btn-login:hover {
+            background: var(--primary-dark);
+        }
+
+        .admin-dashboard {
+            display: none;
+            padding: 120px 0 60px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-header h2 {
+            margin: 0;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 2px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .stat-label {
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .admin-controls input,
+        .admin-controls select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 2px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .admin-controls button {
+            padding: 10px 25px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .admin-controls button:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-logout {
+            background: #dc3545 !important;
+            color: var(--white);
+            padding: 10px 25px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c82333 !important;
+        }
+
+        .applications-table {
+            background: var(--white);
+            border-radius: 2px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .applications-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .applications-table th {
+            background: var(--light);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .applications-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .applications-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-reviewed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-review {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-review:hover {
+            background: #0056b3;
+        }
+
+        .btn-delete {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #5a6268;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .admin-error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 2px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .admin-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 2px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .applications-table td,
+            .applications-table th {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+
+            .action-buttons button {
+                padding: 3px 8px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    <i class="fas fa-handshake"></i>
+                    <span>ServicePortal</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="service-detail.html">Apply Now</a></li>
+                    <li><a href="admin-portal.html" class="btn-primary active">Admin</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Admin Login -->
+    <div id="adminLogin" class="container">
+        <div class="admin-login">
+            <div class="login-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h2>Admin Login</h2>
+            <p style="color: var(--gray); margin-bottom: 25px;">Enter your credentials to access the dashboard</p>
+            
+            <div id="loginError" class="admin-error">
+                <i class="fas fa-exclamation-circle"></i> Invalid username or password
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="adminUsername" placeholder="Enter username" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
+                    Default: admin / admin123
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard">
+        <div class="container">
+            <div class="admin-header">
+                <div>
+                    <h2><i class="fas fa-tachometer-alt" style="color: var(--primary);"></i> Admin Dashboard</h2>
+                    <p style="color: var(--gray);">Manage all service applications</p>
+                </div>
+                <div>
+                    <button class="btn-logout" onclick="logoutAdmin()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalApps">0</div>
+                    <div class="stat-label">Total Applications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingApps">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="approvedApps">0</div>
+                    <div class="stat-label">Approved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rejectedApps">0</div>
+                    <div class="stat-label">Rejected</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="admin-controls">
+                <input type="text" id="searchInput" placeholder="Search by name, email, or service..." onkeyup="filterApplications()">
+                <select id="filterStatus" onchange="filterApplications()">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="reviewed">Reviewed</option>
+                </select>
+                <button onclick="refreshApplications()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Success Message -->
+            <div id="adminSuccess" class="admin-success">
+                <i class="fas fa-check-circle"></i> <span id="successMessage">Action completed</span>
+            </div>
+
+            <!-- Applications Table -->
+            <div class="applications-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
