@@ -209,3 +209,76 @@ document.querySelectorAll('.service-card, .step').forEach(el => {
     el.style.transition = 'all 0.6s ease';
     observer.observe(el);
 });
+// Add this to your existing script.js file
+
+// Modified form submission - stores in localStorage for admin
+function setupForm() {
+    const form = document.getElementById('applicationForm');
+    const status = document.getElementById('formStatus');
+
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const service = document.getElementById('serviceSelect').value;
+        const experience = document.getElementById('experience').value;
+        const budget = document.getElementById('budget').value;
+        const message = document.getElementById('message').value.trim();
+        const terms = document.getElementById('terms');
+
+        if (!name || !email || !phone || !service || !message) {
+            showStatus('Please fill in all required fields.', 'error');
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            showStatus('Please enter a valid email address.', 'error');
+            return;
+        }
+
+        if (!terms || !terms.checked) {
+            showStatus('Please agree to the Terms & Conditions.', 'error');
+            return;
+        }
+
+        // Create application data
+        const applicationData = {
+            fullName: name,
+            email: email,
+            phone: phone,
+            service: service,
+            experience: experience || 'Not specified',
+            budget: budget || 'Not specified',
+            message: message,
+            documents: 'No files uploaded' // In production, handle file upload
+        };
+
+        // Save to localStorage (for admin portal)
+        const applications = JSON.parse(localStorage.getItem('serviceApplications') || '[]');
+        const newApp = {
+            id: Date.now(),
+            ...applicationData,
+            status: 'pending',
+            submittedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        applications.unshift(newApp);
+        localStorage.setItem('serviceApplications', JSON.stringify(applications));
+
+        showStatus(`
+            ✅ <strong>Application Submitted Successfully!</strong><br>
+            Thank you, ${name}! We've received your application for ${service}.<br>
+            We'll contact you at ${email} within 24 hours.<br>
+            <small style="color: var(--gray);">Your application has been sent to the admin for review.</small>
+        `, 'success');
+
+        form.reset();
+
+        console.log('Application submitted:', applicationData);
+        console.log('View in Admin Portal: admin-portal.html');
+    });
+}
