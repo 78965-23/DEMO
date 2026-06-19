@@ -3,12 +3,11 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import os
 import time
-import urllib.parse
 
 PORT = 8000
 DATA_FILE = 'data.json'
 
-class Server(SimpleHTTPRequestHandler):
+class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/api/applications':
             self.send_response(200)
@@ -26,8 +25,8 @@ class Server(SimpleHTTPRequestHandler):
             body = self.rfile.read(length).decode()
             try:
                 app = json.loads(body)
-                data = self.load_data()
                 app['id'] = int(time.time() * 1000)
+                data = self.load_data()
                 data.append(app)
                 self.save_data(data)
                 self.send_response(201)
@@ -99,8 +98,7 @@ class Server(SimpleHTTPRequestHandler):
 
 print(f"✅ Server running at http://localhost:{PORT}")
 print(f"📁 Data stored in {DATA_FILE}")
-print("🔑 Admin Password: 08092003")
+print("🔑 Admin password: 08092003")
 print("Press Ctrl+C to stop.")
-
-httpd = HTTPServer(('', PORT), Server)
+httpd = HTTPServer(('', PORT), Handler)
 httpd.serve_forever()
