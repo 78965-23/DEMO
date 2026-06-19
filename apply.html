@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Certificate</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo"><i class="fas fa-award"></i> CertPortal</div>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="apply.html" class="active">Apply</a></li>
+                    <li><a href="status.html">Track Status</a></li>
+                    <li><a href="download.html">Download</a></li>
+                    <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
+                </ul>
+                <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="apply-section">
+        <div class="container">
+            <h2>Apply for <span id="certName">Certificate</span></h2>
+            <p class="sub">Fill in all required details below</p>
+            <form id="applyForm" class="apply-form">
+                <div id="formFields">
+                    <!-- Dynamic fields -->
+                </div>
+                <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit Application</button>
+            </form>
+            <div id="formStatus" class="form-status"></div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container"><div class="footer-bottom"><p>All Rights Reserved @dEMO</p></div></div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        const certTypes = {
+            'funniest-man': { name: 'Funniest Man of the Year', fields: ['fullName','email','phone','address','comedyStyle','yearsExp','bestJoke','videoLink','socialHandle'] },
+            'tallest-man': { name: 'Tallest Man of India', fields: ['fullName','email','phone','address','heightCm','city','state','dob','profession','proofHeight'] },
+            'millionaire': { name: 'Millionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber'] },
+            'billionaire': { name: 'Billionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber','globalPresence'] },
+            'trillionaire': { name: 'Trillionaire Certificate', fields: ['fullName','email','phone','address','netWorth','sourceWealth','businessName','yearsSuccess','panNumber','globalPresence','industryType'] },
+            'content-creator': { name: 'Content Creator Certificate', fields: ['fullName','email','phone','address','platform','followers','contentNiche','yearsActive','bestContentLink'] }
+        };
+        const fieldLabels = {
+            fullName: 'Full Name *', email: 'Email Address *', phone: 'Phone Number *', address: 'Address *',
+            comedyStyle: 'Comedy Style', yearsExp: 'Years of Experience', bestJoke: 'Best Joke', videoLink: 'Video Link', socialHandle: 'Social Media Handle',
+            heightCm: 'Height (cm) *', city: 'City', state: 'State', dob: 'Date of Birth', profession: 'Profession', proofHeight: 'Proof of Height (link)',
+            netWorth: 'Net Worth (USD) *', sourceWealth: 'Source of Wealth', businessName: 'Business Name', yearsSuccess: 'Years of Success', panNumber: 'PAN Number',
+            globalPresence: 'Global Presence (Countries)', industryType: 'Industry Type',
+            platform: 'Primary Platform', followers: 'Followers Count', contentNiche: 'Content Niche', yearsActive: 'Years Active', bestContentLink: 'Best Content Link'
+        };
+        const fieldTypes = {
+            fullName: 'text', email: 'email', phone: 'tel', address: 'text', comedyStyle: 'text', yearsExp: 'number', bestJoke: 'text', videoLink: 'url', socialHandle: 'text',
+            heightCm: 'number', city: 'text', state: 'text', dob: 'date', profession: 'text', proofHeight: 'url',
+            netWorth: 'number', sourceWealth: 'text', businessName: 'text', yearsSuccess: 'number', panNumber: 'text',
+            globalPresence: 'text', industryType: 'text',
+            platform: 'text', followers: 'number', contentNiche: 'text', yearsActive: 'number', bestContentLink: 'url'
+        };
+        const urlParams = new URLSearchParams(window.location.search);
+        const certType = urlParams.get('type') || 'funniest-man';
+        const certData = certTypes[certType] || certTypes['funniest-man'];
+        document.getElementById('certName').textContent = certData.name;
+
+        const container = document.getElementById('formFields');
+        container.innerHTML = certData.fields.map(f => `
+            <div class="form-group">
+                <label for="${f}"><i class="fas ${f==='fullName'?'fa-user':f==='email'?'fa-envelope':f==='phone'?'fa-phone':'fa-pen'}"></i> ${fieldLabels[f] || f}</label>
+                <input type="${fieldTypes[f] || 'text'}" id="${f}" name="${f}" ${f.includes('*')?'required':''} placeholder="Enter ${fieldLabels[f]?.replace('*','').trim() || f}" />
+            </div>
+        `).join('');
+
+        document.getElementById('applyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            certData.fields.forEach(f => data[f] = formData.get(f) || '');
+            data.certificateType = certType;
+            data.certificateName = certData.name;
+            data.status = 'pending';
+            data.submittedAt = new Date().toISOString();
+            const ref = 'REF-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+            data.referenceNumber = ref;
+            const apps = JSON.parse(localStorage.getItem('certApplications') || '[]');
+            data.id = Date.now();
+            apps.push(data);
+            localStorage.setItem('certApplications', JSON.stringify(apps));
+            document.getElementById('formStatus').className = 'form-status success';
+            document.getElementById('formStatus').innerHTML = `
+                ✅ <strong>Application Submitted!</strong><br>
+                Dear ${data.fullName}, your application for <strong>${data.certificateName}</strong> has been submitted successfully.<br>
+                Your Reference Number: <strong style="color:#6C63FF;font-size:1.2rem;">${ref}</strong><br>
+                You will receive your certificate within 7 working days.<br>
+                <small>Use this reference number to track your application status.</small>
+            `;
+            this.reset();
+            setTimeout(() => document.getElementById('formStatus').className = 'form-status', 8000);
+        });
+    </script>
+</body>
+</html>
