@@ -21,6 +21,7 @@
                     <li><a href="index.html#services">Services</a></li>
                     <li><a href="index.html#how-it-works">How It Works</a></li>
                     <li><a href="service-detail.html" class="btn-primary active">Apply Now</a></li>
+                    <li><a href="admin-portal.html" class="btn-admin">Admin</a></li>
                 </ul>
                 <div class="hamburger">
                     <span></span>
@@ -62,14 +63,14 @@
                     <label for="serviceSelect"><i class="fas fa-list"></i> Select Service *</label>
                     <select id="serviceSelect" required>
                         <option value="">Choose a service...</option>
-                        <option value="web-development">Web Development</option>
-                        <option value="mobile-app">Mobile App Development</option>
-                        <option value="ui-ux">UI/UX Design</option>
-                        <option value="digital-marketing">Digital Marketing</option>
-                        <option value="content-writing">Content Writing</option>
-                        <option value="graphic-design">Graphic Design</option>
-                        <option value="video-editing">Video Editing</option>
-                        <option value="it-consulting">IT Consulting</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Mobile App Development">Mobile App Development</option>
+                        <option value="UI/UX Design">UI/UX Design</option>
+                        <option value="Digital Marketing">Digital Marketing</option>
+                        <option value="Content Writing">Content Writing</option>
+                        <option value="Graphic Design">Graphic Design</option>
+                        <option value="Video Editing">Video Editing</option>
+                        <option value="IT Consulting">IT Consulting</option>
                     </select>
                 </div>
 
@@ -89,11 +90,11 @@
                     <label for="budget"><i class="fas fa-money-bill-wave"></i> Budget Range</label>
                     <select id="budget">
                         <option value="">Select budget range...</option>
-                        <option value="under-500">Under $500</option>
-                        <option value="500-1000">$500 - $1,000</option>
-                        <option value="1000-5000">$1,000 - $5,000</option>
-                        <option value="5000-10000">$5,000 - $10,000</option>
-                        <option value="10000+">$10,000+</option>
+                        <option value="Under $500">Under $500</option>
+                        <option value="$500 - $1,000">$500 - $1,000</option>
+                        <option value="$1,000 - $5,000">$1,000 - $5,000</option>
+                        <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+                        <option value="$10,000+">$10,000+</option>
                     </select>
                 </div>
 
@@ -163,7 +164,6 @@
                 const select = document.getElementById('serviceSelect');
                 display.textContent = service;
                 
-                // Auto-select the service in dropdown
                 const option = Array.from(select.options).find(opt => 
                     opt.text.toLowerCase().includes(service.toLowerCase())
                 );
