@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Application Status</title>
+    <title>Track Status</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -14,6 +14,7 @@
                 <div class="logo"><i class="fas fa-award"></i> CertPortal</div>
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="apply.html">Apply</a></li>
                     <li><a href="status.html" class="active">Track</a></li>
                     <li><a href="download.html">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
@@ -28,10 +29,10 @@
     <section class="status-section">
         <div class="container">
             <h2>Track Your <span>Application</span></h2>
-            <p class="sub">Enter your Reference Number to check status</p>
+            <p class="sub">Enter your Reference Number</p>
             <div class="status-box">
-                <input type="text" id="refInput" placeholder="Enter Reference Number (e.g. REF-12345678-ABC12)" />
-                <button onclick="trackStatus()"><i class="fas fa-search"></i> Check Status</button>
+                <input type="text" id="refInput" placeholder="e.g. REF-12345678-ABC12" />
+                <button onclick="trackStatus()"><i class="fas fa-search"></i> Check</button>
             </div>
             <div id="statusResult" class="status-result"></div>
         </div>
@@ -55,10 +56,10 @@
                 const apps = await res.json();
                 const app = apps.find(a => a.referenceNumber === ref);
                 if (!app) {
-                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this reference number.</div>';
+                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found.</div>';
                     return;
                 }
-                const statusMap = { pending: '⏳ Pending Review', approved: '✅ Approved', rejected: '❌ Rejected' };
+                const statusMap = { pending: '⏳ Pending', approved: '✅ Approved', rejected: '❌ Rejected' };
                 const statusClass = { pending: 'pending', approved: 'approved', rejected: 'rejected' };
                 result.innerHTML = `
                     <div class="status-card">
@@ -68,11 +69,11 @@
                         </div>
                         <div class="status-body">
                             <p><strong>Name:</strong> ${app.fullName}</p>
-                            <p><strong>Certificate:</strong> ${app.certificateName || app.certificateType}</p>
+                            <p><strong>Certificate:</strong> ${app.certificateName}</p>
                             <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleDateString()}</p>
-                            ${app.status === 'approved' ? `<p style="color:#28a745;font-weight:600;"><i class="fas fa-check-circle"></i> Certificate Approved! Download it from the <a href="download.html">Download</a> page.</p>` : ''}
-                            ${app.status === 'rejected' ? `<p style="color:#dc3545;"><i class="fas fa-times-circle"></i> Application was not approved. Contact support for details.</p>` : ''}
-                            ${app.status === 'pending' ? `<p style="color:#856404;"><i class="fas fa-clock"></i> Your application is under review. You will be notified within 7 working days.</p>` : ''}
+                            ${app.status === 'approved' ? `<p style="color:#28a745;font-weight:600;"><i class="fas fa-check-circle"></i> Certificate Approved! Download from the <a href="download.html">Download</a> page.</p>` : ''}
+                            ${app.status === 'rejected' ? `<p style="color:#dc3545;"><i class="fas fa-times-circle"></i> Application rejected.</p>` : ''}
+                            ${app.status === 'pending' ? `<p style="color:#856404;"><i class="fas fa-clock"></i> Under review. You will be notified within 7 days.</p>` : ''}
                         </div>
                     </div>
                 `;
