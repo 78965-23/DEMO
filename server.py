@@ -1,84 +1,67 @@
 #!/usr/bin/env python3
-import http.server
-import socketserver
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import os
-import urllib.parse
 import time
+import urllib.parse
 
 PORT = 8000
 DATA_FILE = 'data.json'
 
-class MyHandler(http.server.SimpleHTTPRequestHandler):
-    
+class Server(SimpleHTTPRequestHandler):
     def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        
-        # API endpoint – return JSON
-        if parsed.path == '/api/applications':
+        if self.path == '/api/applications':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            data = self.read_data()
+            data = self.load_data()
             self.wfile.write(json.dumps(data).encode())
             return
-        
-        # Serve static files (HTML, CSS, JS)
-        return super().do_GET()
+        super().do_GET()
 
     def do_POST(self):
         if self.path == '/api/applications':
-            content_len = int(self.headers.get('Content-Length', 0))
-            post_body = self.rfile.read(content_len)
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length).decode()
             try:
-                new_app = json.loads(post_body)
-                data = self.read_data()
-                new_app['id'] = int(time.time() * 1000)
-                data.append(new_app)
-                self.write_data(data)
+                app = json.loads(body)
+                data = self.load_data()
+                app['id'] = int(time.time() * 1000)
+                data.append(app)
+                self.save_data(data)
                 self.send_response(201)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(json.dumps(new_app).encode())
+                self.wfile.write(json.dumps(app).encode())
             except Exception as e:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'error': str(e)}).encode())
             return
-        
-        # If not API, return 404
         self.send_response(404)
         self.end_headers()
 
     def do_PUT(self):
         if self.path.startswith('/api/applications/'):
             app_id = int(self.path.split('/')[-1])
-            content_len = int(self.headers.get('Content-Length', 0))
-            put_body = self.rfile.read(content_len)
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length).decode()
             try:
-                update_data = json.loads(put_body)
-                data = self.read_data()
-                found = False
+                update = json.loads(body)
+                data = self.load_data()
                 for app in data:
                     if app['id'] == app_id:
-                        app.update(update_data)
-                        found = True
+                        app.update(update)
                         break
-                if not found:
-                    self.send_response(404)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({'error': 'Application not found'}).encode())
-                    return
-                self.write_data(data)
+                self.save_data(data)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(json.dumps(update_data).encode())
+                self.wfile.write(json.dumps(update).encode())
             except Exception as e:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
@@ -91,9 +74,9 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_DELETE(self):
         if self.path.startswith('/api/applications/'):
             app_id = int(self.path.split('/')[-1])
-            data = self.read_data()
+            data = self.load_data()
             data = [app for app in data if app['id'] != app_id]
-            self.write_data(data)
+            self.save_data(data)
             self.send_response(204)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
@@ -101,7 +84,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
-    def read_data(self):
+    def load_data(self):
         if not os.path.exists(DATA_FILE):
             return []
         try:
@@ -110,18 +93,14 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         except:
             return []
 
-    def write_data(self, data):
+    def save_data(self, data):
         with open(DATA_FILE, 'w') as f:
             json.dump(data, f, indent=2)
 
-if __name__ == '__main__':
-    # Clear any old data (optional – comment out if you want to keep data)
-    # if os.path.exists(DATA_FILE):
-    #     os.remove(DATA_FILE)
-    
-    with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-        print(f"✅ Server running at http://localhost:{PORT}")
-        print(f"📁 Data stored in {DATA_FILE}")
-        print("🔑 Admin Password: 08092003")
-        print("Press Ctrl+C to stop.")
-        httpd.serve_forever()
+print(f"✅ Server running at http://localhost:{PORT}")
+print(f"📁 Data stored in {DATA_FILE}")
+print("🔑 Admin Password: 08092003")
+print("Press Ctrl+C to stop.")
+
+httpd = HTTPServer(('', PORT), Server)
+httpd.serve_forever()
