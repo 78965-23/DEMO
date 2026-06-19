@@ -16,6 +16,7 @@
                 <div class="logo"><i class="fas fa-award"></i> CertPortal</div>
                 <ul class="nav-links" id="navLinks">
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="apply.html">Apply</a></li>
                     <li><a href="status.html">Track</a></li>
                     <li><a href="download.html" class="active">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
@@ -30,13 +31,13 @@
     <section class="download-section">
         <div class="container">
             <h2>Download <span>Certificate</span></h2>
-            <p class="sub">Enter your Reference Number or Certificate Number to download</p>
+            <p class="sub">Enter Reference or Certificate Number</p>
             <div class="download-box">
                 <input type="text" id="certRefInput" placeholder="Enter Reference or Certificate Number" />
                 <button onclick="downloadCertificate()"><i class="fas fa-download"></i> Download PDF</button>
             </div>
             <div id="downloadResult" class="download-result"></div>
-            <div id="certPreview" style="display:none;margin-top:30px;max-width:800px;margin:30px auto;overflow:auto;"></div>
+            <div id="certPreview" style="display:none;margin:30px auto;max-width:800px;overflow:auto;"></div>
         </div>
     </section>
 
@@ -50,7 +51,7 @@
             const input = document.getElementById('certRefInput').value.trim();
             const result = document.getElementById('downloadResult');
             if (!input) {
-                result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference or certificate number.</div>';
+                result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a number.</div>';
                 return;
             }
             try {
@@ -58,7 +59,7 @@
                 const apps = await res.json();
                 const app = apps.find(a => a.referenceNumber === input || a.certificateNumber === input);
                 if (!app) {
-                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this number.</div>';
+                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found.</div>';
                     return;
                 }
                 if (app.status !== 'approved') {
@@ -72,35 +73,26 @@
         }
 
         function generateCertPDF(app) {
-            const certNum = app.certificateNumber || 'CERT-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+            const certNum = app.certificateNumber || generateCertNum();
             const issueDate = app.approvedAt ? new Date(app.approvedAt).toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' }) : new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-            const certName = app.certificateName || app.certificateType || 'Certificate of Recognition';
+            const certName = app.certificateName || 'Certificate of Recognition';
             const fullName = app.fullName || 'Applicant';
 
-            // OFFICIAL CERTIFICATE DESIGN – small font, Office of Commissioner, underline, digital signature
             const certHTML = `
-                <div id="certContainer" style="
-                    width:800px; padding:50px; background:#faf8f5; border:4px solid #2c3e50;
-                    box-shadow:inset 0 0 0 2px #2c3e50; font-family:'Times New Roman',serif; margin:0 auto;
-                    position:relative; text-align:center; min-height:500px; display:flex; flex-direction:column; justify-content:center;
-                ">
-                    <div style="position:absolute; top:15px; left:0; right:0; text-align:center; font-size:14px; color:#2c3e50; letter-spacing:2px; border-bottom:1px solid #2c3e50; padding-bottom:8px;">
-                        OFFICE OF THE COMMISSIONER
-                    </div>
-                    <div style="margin-top:30px; text-align:center;">
-                        <span style="font-size:16px; color:#2c3e50; letter-spacing:4px;">★</span>
-                    </div>
-                    <h1 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 10px 0; font-weight:600; text-transform:uppercase;">Certificate</h1>
-                    <p style="font-size:13px; color:#555; letter-spacing:4px; margin:0 0 15px 0;">No. ${certNum}</p>
+                <div id="certContainer" style="width:800px; padding:50px; background:#faf8f5; border:4px solid #2c3e50; box-shadow:inset 0 0 0 2px #2c3e50; font-family:'Times New Roman',serif; margin:0 auto; text-align:center; min-height:500px; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="position:absolute; top:15px; left:0; right:0; font-size:14px; color:#2c3e50; letter-spacing:2px; border-bottom:1px solid #2c3e50; padding-bottom:8px;">OFFICE OF THE COMMISSIONER</div>
+                    <div style="margin-top:30px;"><span style="font-size:16px; color:#2c3e50; letter-spacing:4px;">★</span></div>
+                    <h1 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 10px; font-weight:600; text-transform:uppercase;">Certificate</h1>
+                    <p style="font-size:13px; color:#555; letter-spacing:4px; margin:0 0 15px;">No. ${certNum}</p>
                     <p style="font-size:16px; color:#333; letter-spacing:1px; margin:5px 0;">THIS IS TO CERTIFY THAT</p>
                     <h2 style="font-size:36px; color:#1a1a1a; letter-spacing:2px; margin:5px 0; font-weight:600; text-decoration:underline; text-underline-offset:8px;">${fullName}</h2>
-                    <p style="font-size:16px; color:#333; letter-spacing:1px; margin:15px 0 5px 0;">has been officially recognized as</p>
-                    <h3 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 20px 0; font-weight:500; text-decoration:underline; text-underline-offset:6px;">${certName}</h3>
+                    <p style="font-size:16px; color:#333; letter-spacing:1px; margin:15px 0 5px;">has been officially recognized as</p>
+                    <h3 style="font-size:26px; color:#2c3e50; letter-spacing:2px; margin:5px 0 20px; font-weight:500; text-decoration:underline; text-underline-offset:6px;">${certName}</h3>
                     <p style="font-size:14px; color:#555; margin:5px 0;">on this ${issueDate}</p>
-                    <div style="margin-top:25px; border-top:1px solid #ddd; padding-top:15px; font-size:12px; color:#444; text-align:center;">
-                        <p style="margin:5px 0;"><strong>Digitally signed by</strong></p>
-                        <p style="margin:0; font-weight:600; font-size:14px; color:#1a1a1a;">Janamat Sankar, IAS</p>
-                        <p style="margin:2px 0 0; font-size:11px; color:#777;">Commissioner of Certifications</p>
+                    <div style="margin-top:25px; border-top:1px solid #ddd; padding-top:15px; font-size:12px; color:#444;">
+                        <p><strong>Digitally signed by</strong></p>
+                        <p style="font-weight:600; font-size:14px; color:#1a1a1a;">Janamat Sankar, IAS</p>
+                        <p style="font-size:11px; color:#777;">Commissioner of Certifications</p>
                     </div>
                     <div style="margin-top:10px; font-size:10px; color:#aaa; letter-spacing:1px;">This certificate is issued by the Office of the Commissioner</div>
                 </div>
@@ -111,25 +103,22 @@
             preview.innerHTML = certHTML;
 
             const result = document.getElementById('downloadResult');
-            result.innerHTML = '<div class="status-success"><i class="fas fa-spinner fa-spin"></i> Generating certificate PDF...</div>';
+            result.innerHTML = '<div class="status-success"><i class="fas fa-spinner fa-spin"></i> Generating PDF...</div>';
 
             const container = document.getElementById('certContainer');
-            html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#faf8f5' }).then(canvas => {
+            html2canvas(container, { scale: 2, backgroundColor: '#faf8f5' }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                 const pdfWidth = 210;
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Certificate_${fullName.replace(/\s/g,'_')}_${certNum}.pdf`);
-                result.innerHTML = `<div class="status-success"><i class="fas fa-check-circle"></i> Certificate downloaded successfully!</div>`;
+                result.innerHTML = `<div class="status-success"><i class="fas fa-check-circle"></i> Certificate downloaded!</div>`;
             }).catch(err => {
                 result.innerHTML = `<div class="status-error"><i class="fas fa-exclamation-circle"></i> Error: ${err.message}</div>`;
             });
         }
-
-        document.getElementById('certRefInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') downloadCertificate();
-        });
+        document.getElementById('certRefInput').addEventListener('keyup', function(e) { if(e.key==='Enter') downloadCertificate(); });
     </script>
 </body>
 </html>
