@@ -19,7 +19,7 @@
                     <li><a href="download.html">Download</a></li>
                     <li><a href="admin.html" class="btn-admin">🔐 Admin</a></li>
                 </ul>
-                <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('active')">
+                <div class="hamburger" onclick="toggleMenu()">
                     <span></span><span></span><span></span>
                 </div>
             </div>
@@ -44,34 +44,42 @@
 
     <script src="script.js"></script>
     <script>
-        function trackStatus() {
+        async function trackStatus() {
             const ref = document.getElementById('refInput').value.trim();
             const result = document.getElementById('statusResult');
-            if (!ref) { result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference number.</div>'; return; }
-            const apps = JSON.parse(localStorage.getItem('certApplications') || '[]');
-            const app = apps.find(a => a.referenceNumber === ref);
-            if (!app) {
-                result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this reference number.</div>';
+            if (!ref) {
+                result.innerHTML = '<div class="status-error"><i class="fas fa-exclamation-circle"></i> Please enter a reference number.</div>';
                 return;
             }
-            const statusMap = { pending: '⏳ Pending Review', approved: '✅ Approved', rejected: '❌ Rejected' };
-            const statusClass = { pending: 'pending', approved: 'approved', rejected: 'rejected' };
-            result.innerHTML = `
-                <div class="status-card">
-                    <div class="status-header">
-                        <span class="status-badge ${statusClass[app.status] || 'pending'}">${statusMap[app.status] || app.status}</span>
-                        <span class="ref-num">${app.referenceNumber}</span>
+            try {
+                const res = await fetch('/api/applications');
+                const apps = await res.json();
+                const app = apps.find(a => a.referenceNumber === ref);
+                if (!app) {
+                    result.innerHTML = '<div class="status-error"><i class="fas fa-times-circle"></i> No application found with this reference number.</div>';
+                    return;
+                }
+                const statusMap = { pending: '⏳ Pending Review', approved: '✅ Approved', rejected: '❌ Rejected' };
+                const statusClass = { pending: 'pending', approved: 'approved', rejected: 'rejected' };
+                result.innerHTML = `
+                    <div class="status-card">
+                        <div class="status-header">
+                            <span class="status-badge ${statusClass[app.status] || 'pending'}">${statusMap[app.status] || app.status}</span>
+                            <span class="ref-num">${app.referenceNumber}</span>
+                        </div>
+                        <div class="status-body">
+                            <p><strong>Name:</strong> ${app.fullName}</p>
+                            <p><strong>Certificate:</strong> ${app.certificateName || app.certificateType}</p>
+                            <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleDateString()}</p>
+                            ${app.status === 'approved' ? `<p style="color:#28a745;font-weight:600;"><i class="fas fa-check-circle"></i> Certificate Approved! Download it from the <a href="download.html">Download</a> page.</p>` : ''}
+                            ${app.status === 'rejected' ? `<p style="color:#dc3545;"><i class="fas fa-times-circle"></i> Application was not approved. Contact support for details.</p>` : ''}
+                            ${app.status === 'pending' ? `<p style="color:#856404;"><i class="fas fa-clock"></i> Your application is under review. You will be notified within 7 working days.</p>` : ''}
+                        </div>
                     </div>
-                    <div class="status-body">
-                        <p><strong>Name:</strong> ${app.fullName}</p>
-                        <p><strong>Certificate:</strong> ${app.certificateName || app.certificateType}</p>
-                        <p><strong>Submitted:</strong> ${new Date(app.submittedAt).toLocaleDateString()}</p>
-                        ${app.status === 'approved' ? `<p style="color:#28a745;font-weight:600;"><i class="fas fa-check-circle"></i> Certificate Approved! Download it from the <a href="download.html">Download</a> page.</p>` : ''}
-                        ${app.status === 'rejected' ? `<p style="color:#dc3545;"><i class="fas fa-times-circle"></i> Application was not approved. Contact support for details.</p>` : ''}
-                        ${app.status === 'pending' ? `<p style="color:#856404;"><i class="fas fa-clock"></i> Your application is under review. You will be notified within 7 working days.</p>` : ''}
-                    </div>
-                </div>
-            `;
+                `;
+            } catch(err) {
+                result.innerHTML = `<div class="status-error"><i class="fas fa-exclamation-circle"></i> Server error: ${err.message}</div>`;
+            }
         }
         document.getElementById('refInput').addEventListener('keyup', function(e) { if(e.key==='Enter') trackStatus(); });
     </script>
