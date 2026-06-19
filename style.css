@@ -106,3 +106,32 @@ footer { background:#2D2D3F; color:#aaa; padding:30px 0 15px; margin-top:40px; }
     .header-row { flex-direction:column; align-items:stretch; }
     .header-row .left { flex-direction:column; }
 }
+/* Progress overlay */
+.progress-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 99999;
+    justify-content: center; align-items: center; flex-direction: column;
+}
+.progress-overlay.show { display: flex; }
+.progress-box {
+    background: #fff; padding: 40px; border-radius: 12px; text-align: center;
+    max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.progress-box .spinner { font-size: 3rem; color: #6C63FF; margin-bottom: 15px; }
+.progress-box h3 { margin-bottom: 10px; }
+.progress-track { width: 100%; height: 12px; background: #eee; border-radius: 6px; margin: 15px 0; overflow: hidden; }
+.progress-track .bar { height: 100%; background: #6C63FF; border-radius: 6px; width: 0%; transition: width 0.3s; }
+.progress-box .sub { color: #666; font-size: 0.9rem; }
+
+/* Receipt button */
+.btn-receipt { background: #6C63FF; color: #fff; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+.btn-receipt:hover { background: #5A52D5; }
+
+/* Edit area */
+.edit-area { margin: 15px 0; }
+.edit-area label { font-weight: 600; display: block; margin-bottom: 5px; }
+.edit-area input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; }
+.edit-area input:focus { outline: none; border-color: #6C63FF; box-shadow: 0 0 0 3px rgba(108,99,255,0.1); }
+
+/* Form validation */
+.form-group input:invalid { border-color: #dc3545; }
