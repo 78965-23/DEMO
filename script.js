@@ -156,3 +156,19 @@ document.querySelectorAll('.service-card, .step').forEach(el => {
     el.style.transition = 'all 0.6s ease';
     observer.observe(el);
 });
+// Shared utilities – minimal
+function generateRef() {
+    return 'REF-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function generateCertNum() {
+    return 'CERT-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function getApplications() {
+    try { return JSON.parse(localStorage.getItem('certApplications') || '[]'); } catch(e) { return []; }
+}
+
+function saveApplications(apps) {
+    localStorage.setItem('certApplications', JSON.stringify(apps));
+}
