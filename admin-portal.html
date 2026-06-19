@@ -1,434 +1,350 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal - ServicePortal</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Admin Portal Specific Styles */
-        .admin-login {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: var(--white);
-            border-radius: 2px;
-            border: 1px solid var(--border-color);
-            text-align: center;
+// Admin Portal JavaScript - SECURE VERSION
+
+// Admin Credentials
+const ADMIN_PASSWORD = '08092003';
+const MAX_ATTEMPTS = 3;
+let loginAttempts = 0;
+
+// Status constants
+const STATUS = {
+    PENDING: 'pending',
+    REVIEWED: 'reviewed',
+    APPROVED: 'approved',
+    REJECTED: 'rejected'
+};
+
+// ============ PASSWORD PROTECTION ============
+
+// Handle password submission
+function handlePasswordSubmit(event) {
+    event.preventDefault();
+    
+    const passwordInput = document.getElementById('adminPasswordInput');
+    const errorDiv = document.getElementById('passwordError');
+    const attemptCounter = document.getElementById('attemptCounter');
+    const attemptCountSpan = document.getElementById('attemptCount');
+    const unlockBtn = document.getElementById('unlockBtn');
+    
+    const enteredPassword = passwordInput.value.trim();
+    
+    // Check if locked out
+    if (loginAttempts >= MAX_ATTEMPTS) {
+        errorDiv.textContent = '🔒 Account locked. Please contact administrator.';
+        errorDiv.className = 'error-message show';
+        passwordInput.disabled = true;
+        unlockBtn.disabled = true;
+        return;
+    }
+    
+    // Validate password
+    if (enteredPassword === ADMIN_PASSWORD) {
+        // Success - unlock dashboard
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = '';
+        document.getElementById('passwordOverlay').style.display = 'none';
+        document.getElementById('adminDashboard').className = 'admin-dashboard show';
+        document.querySelector('body').style.overflow = 'auto';
+        loadApplications();
+        
+        // Reset attempts
+        loginAttempts = 0;
+        attemptCounter.className = 'attempt-counter';
+        localStorage.setItem('adminAccess', 'granted');
+    } else {
+        // Failed attempt
+        loginAttempts++;
+        const remaining = MAX_ATTEMPTS - loginAttempts;
+        
+        // Show error
+        errorDiv.textContent = '❌ Incorrect password. Please try again.';
+        errorDiv.className = 'error-message show';
+        passwordInput.className = 'error';
+        
+        // Update attempt counter
+        if (remaining > 0) {
+            attemptCountSpan.textContent = remaining;
+            attemptCounter.className = 'attempt-counter show';
         }
-
-        .admin-login h2 {
-            margin-bottom: 10px;
+        
+        // Clear password field
+        passwordInput.value = '';
+        passwordInput.focus();
+        
+        // Lock after max attempts
+        if (loginAttempts >= MAX_ATTEMPTS) {
+            errorDiv.textContent = '🔒 Account locked. Maximum attempts exceeded.';
+            errorDiv.className = 'error-message show';
+            passwordInput.disabled = true;
+            unlockBtn.disabled = true;
+            attemptCounter.className = 'attempt-counter show';
+            attemptCountSpan.textContent = '0';
         }
+        
+        // Shake animation
+        const box = document.querySelector('.password-box');
+        box.style.animation = 'none';
+        setTimeout(() => {
+            box.style.animation = 'shake 0.5s ease';
+        }, 10);
+    }
+}
 
-        .admin-login .login-icon {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
+// Check if already authenticated
+function checkAdminAuth() {
+    const access = localStorage.getItem('adminAccess');
+    if (access === 'granted') {
+        // Check if session expired (optional: add timeout)
+        document.getElementById('passwordOverlay').style.display = 'none';
+        document.getElementById('adminDashboard').className = 'admin-dashboard show';
+        document.querySelector('body').style.overflow = 'auto';
+        loadApplications();
+    }
+}
 
-        .admin-login .form-group {
-            text-align: left;
-        }
+// ============ APPLICATION MANAGEMENT ============
 
-        .admin-login .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            border-radius: 2px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+// Get applications from localStorage
+function getApplications() {
+    const apps = localStorage.getItem('serviceApplications');
+    return apps ? JSON.parse(apps) : [];
+}
 
-        .admin-login .btn-login:hover {
-            background: var(--primary-dark);
-        }
+// Save applications to localStorage
+function saveApplications(applications) {
+    localStorage.setItem('serviceApplications', JSON.stringify(applications));
+}
 
-        .admin-dashboard {
-            display: none;
-            padding: 120px 0 60px;
-        }
+// Load applications into table
+function loadApplications() {
+    const applications = getApplications();
+    const tbody = document.getElementById('applicationsTableBody');
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const filter = document.getElementById('filterStatus').value;
 
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    let filtered = applications;
 
-        .admin-header h2 {
-            margin: 0;
-        }
+    // Apply search filter
+    if (search) {
+        filtered = filtered.filter(app =>
+            app.fullName.toLowerCase().includes(search) ||
+            app.email.toLowerCase().includes(search) ||
+            app.service.toLowerCase().includes(search)
+        );
+    }
 
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
+    // Apply status filter
+    if (filter !== 'all') {
+        filtered = filtered.filter(app => app.status === filter);
+    }
 
-        .stat-card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 2px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
+    // Update stats
+    updateStats(applications);
 
-        .stat-card .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No applications found</h3>
+                        <p>${applications.length === 0 ? 'No applications have been submitted yet.' : 'Try adjusting your search filters.'}</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-        .stat-card .stat-label {
-            color: var(--gray);
-            margin-top: 5px;
-        }
-
-        .admin-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .admin-controls input,
-        .admin-controls select {
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 2px;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .admin-controls button {
-            padding: 10px 25px;
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .admin-controls button:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-logout {
-            background: #dc3545 !important;
-            color: var(--white);
-            padding: 10px 25px;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: #c82333 !important;
-        }
-
-        .applications-table {
-            background: var(--white);
-            border-radius: 2px;
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
-
-        .applications-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .applications-table th {
-            background: var(--light);
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .applications-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        .applications-table tr:hover {
-            background: #f8f9ff;
-        }
-
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-reviewed {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons button {
-            padding: 5px 12px;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-
-        .btn-approve {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-approve:hover {
-            background: #218838;
-        }
-
-        .btn-reject {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-reject:hover {
-            background: #c82333;
-        }
-
-        .btn-review {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-review:hover {
-            background: #0056b3;
-        }
-
-        .btn-delete {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #5a6268;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-
-        .admin-error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px 15px;
-            border-radius: 2px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .admin-success {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px 15px;
-            border-radius: 2px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .admin-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .applications-table td,
-            .applications-table th {
-                padding: 10px;
-                font-size: 0.85rem;
-            }
-
-            .action-buttons button {
-                padding: 3px 8px;
-                font-size: 0.7rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <nav class="navbar">
-            <div class="container">
-                <div class="logo">
-                    <i class="fas fa-handshake"></i>
-                    <span>ServicePortal</span>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="index.html#services">Services</a></li>
-                    <li><a href="service-detail.html">Apply Now</a></li>
-                    <li><a href="admin-portal.html" class="btn-primary active">Admin</a></li>
-                </ul>
-                <div class="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Admin Login -->
-    <div id="adminLogin" class="container">
-        <div class="admin-login">
-            <div class="login-icon">
-                <i class="fas fa-user-shield"></i>
-            </div>
-            <h2>Admin Login</h2>
-            <p style="color: var(--gray); margin-bottom: 25px;">Enter your credentials to access the dashboard</p>
-            
-            <div id="loginError" class="admin-error">
-                <i class="fas fa-exclamation-circle"></i> Invalid username or password
-            </div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="adminUsername" placeholder="Enter username" value="admin" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="adminPassword" placeholder="Enter password" value="admin123" required>
-                </div>
-                <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-                <p style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
-                    Default: admin / admin123
-                </p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div id="adminDashboard" class="admin-dashboard">
-        <div class="container">
-            <div class="admin-header">
-                <div>
-                    <h2><i class="fas fa-tachometer-alt" style="color: var(--primary);"></i> Admin Dashboard</h2>
-                    <p style="color: var(--gray);">Manage all service applications</p>
-                </div>
-                <div>
-                    <button class="btn-logout" onclick="logoutAdmin()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+    tbody.innerHTML = filtered.map((app, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td><strong>${app.fullName}</strong></td>
+            <td>${app.email}</td>
+            <td>${app.service}</td>
+            <td>
+                <span class="status-badge status-${app.status}">
+                    ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                </span>
+            </td>
+            <td>${new Date(app.submittedAt).toLocaleDateString()}</td>
+            <td>
+                <div class="action-buttons">
+                    ${app.status === STATUS.PENDING ? `
+                        <button class="btn-review" onclick="reviewApplication(${app.id})" title="Review">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-approve" onclick="approveApplication(${app.id})" title="Approve">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-reject" onclick="rejectApplication(${app.id})" title="Reject">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : `
+                        ${app.status === STATUS.REVIEWED ? `
+                            <button class="btn-approve" onclick="approveApplication(${app.id})" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-reject" onclick="rejectApplication(${app.id})" title="Reject">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : `
+                            <span style="color: var(--gray); font-size: 0.8rem;">
+                                ${app.status === STATUS.APPROVED ? '✅ Approved' : '❌ Rejected'}
+                            </span>
+                        `}
+                    `}
+                    <button class="btn-delete" onclick="deleteApplicationHandler(${app.id})" title="Delete">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            </div>
+            </td>
+        </tr>
+    `).join('');
+}
 
-            <!-- Stats -->
-            <div class="admin-stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalApps">0</div>
-                    <div class="stat-label">Total Applications</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="pendingApps">0</div>
-                    <div class="stat-label">Pending</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="approvedApps">0</div>
-                    <div class="stat-label">Approved</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="rejectedApps">0</div>
-                    <div class="stat-label">Rejected</div>
-                </div>
-            </div>
+// Update statistics
+function updateStats(applications) {
+    const total = applications.length;
+    const pending = applications.filter(app => app.status === STATUS.PENDING).length;
+    const approved = applications.filter(app => app.status === STATUS.APPROVED).length;
+    const rejected = applications.filter(app => app.status === STATUS.REJECTED).length;
 
-            <!-- Controls -->
-            <div class="admin-controls">
-                <input type="text" id="searchInput" placeholder="Search by name, email, or service..." onkeyup="filterApplications()">
-                <select id="filterStatus" onchange="filterApplications()">
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="reviewed">Reviewed</option>
-                </select>
-                <button onclick="refreshApplications()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-            </div>
+    document.getElementById('totalApps').textContent = total;
+    document.getElementById('pendingApps').textContent = pending;
+    document.getElementById('approvedApps').textContent = approved;
+    document.getElementById('rejectedApps').textContent = rejected;
+}
 
-            <!-- Success Message -->
-            <div id="adminSuccess" class="admin-success">
-                <i class="fas fa-check-circle"></i> <span id="successMessage">Action completed</span>
-            </div>
+// Filter applications
+function filterApplications() {
+    loadApplications();
+}
 
-            <!-- Applications Table -->
-            <div class="applications-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="applicationsTableBody">
-                        <!-- Dynamic content -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+// Refresh applications
+function refreshApplications() {
+    showAdminSuccess('✅ Applications refreshed successfully!');
+    loadApplications();
+}
 
-    <script src="script.js"></script>
-    <script src="admin.js"></script>
-</body>
-</html>
+// Review application
+function reviewApplication(id) {
+    if (updateApplicationStatus(id, STATUS.REVIEWED)) {
+        showAdminSuccess('👁️ Application marked as reviewed!');
+        loadApplications();
+    }
+}
+
+// Approve application
+function approveApplication(id) {
+    if (updateApplicationStatus(id, STATUS.APPROVED)) {
+        showAdminSuccess('✅ Application approved!');
+        loadApplications();
+    }
+}
+
+// Reject application
+function rejectApplication(id) {
+    if (updateApplicationStatus(id, STATUS.REJECTED)) {
+        showAdminSuccess('❌ Application rejected.');
+        loadApplications();
+    }
+}
+
+// Update application status
+function updateApplicationStatus(id, status) {
+    const applications = getApplications();
+    const index = applications.findIndex(app => app.id === id);
+    if (index !== -1) {
+        applications[index].status = status;
+        applications[index].updatedAt = new Date().toISOString();
+        saveApplications(applications);
+        return true;
+    }
+    return false;
+}
+
+// Delete application
+function deleteApplicationHandler(id) {
+    if (confirm('⚠️ Are you sure you want to delete this application?')) {
+        const applications = getApplications();
+        const filtered = applications.filter(app => app.id !== id);
+        saveApplications(filtered);
+        showAdminSuccess('🗑️ Application deleted successfully!');
+        loadApplications();
+    }
+}
+
+// Show admin success message
+function showAdminSuccess(message) {
+    const successDiv = document.getElementById('adminSuccess');
+    document.getElementById('successMessage').textContent = message;
+    successDiv.style.display = 'block';
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
+// ============ LOGOUT ============
+
+function logoutAdmin() {
+    localStorage.removeItem('adminAccess');
+    document.getElementById('adminDashboard').className = 'admin-dashboard';
+    document.getElementById('passwordOverlay').style.display = 'flex';
+    document.querySelector('body').style.overflow = 'hidden';
+    
+    // Reset password field
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminPasswordInput').disabled = false;
+    document.getElementById('unlockBtn').disabled = false;
+    document.getElementById('passwordError').className = 'error-message';
+    document.getElementById('attemptCounter').className = 'attempt-counter';
+    loginAttempts = 0;
+}
+
+// ============ EXPORT TO CSV ============
+
+function exportToCSV() {
+    const applications = getApplications();
+    if (applications.length === 0) {
+        showAdminSuccess('📭 No applications to export!');
+        return;
+    }
+    
+    // Headers
+    let csv = 'ID,Name,Email,Phone,Service,Experience,Budget,Status,Submitted Date\n';
+    
+    // Rows
+    applications.forEach(app => {
+        csv += `${app.id},"${app.fullName}","${app.email}","${app.phone}","${app.service}","${app.experience || 'N/A'}","${app.budget || 'N/A'}","${app.status}",${new Date(app.submittedAt).toLocaleDateString()}\n`;
+    });
+    
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `applications_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    showAdminSuccess('📊 Applications exported to CSV!');
+}
+
+// ============ INITIALIZE ============
+
+// Setup password form
+function setupPasswordForm() {
+    const form = document.getElementById('passwordForm');
+    if (form) {
+        form.addEventListener('submit', handlePasswordSubmit);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    setupPasswordForm();
+    checkAdminAuth();
+    
+    // Auto-focus on password input
+    document.getElementById('adminPasswordInput').focus();
+});
