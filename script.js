@@ -172,3 +172,19 @@ function getApplications() {
 function saveApplications(apps) {
     localStorage.setItem('certApplications', JSON.stringify(apps));
 }
+// Shared utilities – add to the end of script.js
+function generateRef() {
+    return 'REF-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function generateCertNum() {
+    return 'CERT-' + Date.now().toString().slice(-8) + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function getApplications() {
+    try { return JSON.parse(localStorage.getItem('certApplications') || '[]'); } catch(e) { return []; }
+}
+
+function saveApplications(apps) {
+    localStorage.setItem('certApplications', JSON.stringify(apps));
+}
